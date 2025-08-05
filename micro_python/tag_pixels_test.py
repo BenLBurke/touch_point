@@ -8,7 +8,7 @@ NUM_PIXELS = 48
 PIN = board.D18
 BRIGHTNESS = 0.4
 TAIL_LENGTH = 6
-IDLE_COLOR = (255, 255, 255)  # White
+IDLE_COLOR = (100, 100, 100)  # White
 TAP_COLOR = (0, 0, 255)       # Blue
 FINAL_COLOR = (0, 255, 0)     # Green
 
