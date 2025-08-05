@@ -2,7 +2,7 @@ import time
 import board
 import neopixel
 
-NUM_PIXELS = 16        # Update this to match your ring
+NUM_PIXELS = 48        # Update this to match your ring
 TAIL_LENGTH = 6        # How long the trail should be
 COLOR = (255, 100, 0)  # Orange color (you can change this)
 SPEED = 0.05           # Lower = faster
