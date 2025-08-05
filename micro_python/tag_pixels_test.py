@@ -62,3 +62,4 @@ def run():
     finally:
         pixels.fill((0, 0, 0))
         pixels.show()
+run()
