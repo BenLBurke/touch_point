@@ -1,88 +1,77 @@
-import board
-import busio
-import digitalio
-import neopixel
 import time
+import board
+import neopixel
 import pygame
-from adafruit_pn532.spi import PN532_SPI
+from mfrc522 import SimpleMFRC522
 
-# --------- Setup RFID over SPI ---------
-spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
-cs_pin = digitalio.DigitalInOut(board.D5)
-pn532 = PN532_SPI(spi, cs_pin, debug=False)
-pn532.SAM_configuration()
+# --- SETUP ---
 
-# --------- Setup NeoPixels ---------
-NUM_PIXELS = 30
+# NeoPixel Setup
+NUM_PIXELS = 24
 PIXEL_PIN = board.D18
-pixels = neopixel.NeoPixel(PIXEL_PIN, NUM_PIXELS, auto_write=False)
+pixels = neopixel.NeoPixel(PIXEL_PIN, NUM_PIXELS, brightness=0.4, auto_write=False)
 
-# --------- Setup Sound ---------
+# Sound Setup
 pygame.mixer.init()
-scan_sound = pygame.mixer.Sound("sounds_files/mb_accept.wav")
-green_sound = pygame.mixer.Sound("sounds_files/progress.wav")
+tap_sound = pygame.mixer.Sound("sounds/mb_accept.wav")
+success_sound = pygame.mixer.Sound("sounds/progress.wav")
 
-# --------- Animations ---------
-def white_comet():
-    for i in range(NUM_PIXELS):
-        pixels[i] = (200, 200, 200)
-        if i > 0:
-            pixels[i-1] = (50, 50, 50)
-        if i > 1:
-            pixels[i-2] = (10, 10, 10)
-        pixels.show()
-        time.sleep(0.05)
+# RFID Reader
+reader = SimpleMFRC522()
+
+# --- FUNCTIONS ---
+
+def play_sound(sound):
+    pygame.mixer.Sound.play(sound)
+
+def clear_pixels():
     pixels.fill((0, 0, 0))
     pixels.show()
 
-def blue_comet():
-    for i in range(NUM_PIXELS):
-        pixels[i] = (0, 0, 255)
-        if i > 0:
-            pixels[i-1] = (0, 0, 80)
-        if i > 1:
-            pixels[i-2] = (0, 0, 20)
+def comet(color, tail_length=6, delay=0.03):
+    for i in range(NUM_PIXELS + tail_length):
+        for j in range(tail_length):
+            idx = i - j
+            if 0 <= idx < NUM_PIXELS:
+                brightness = 1 - (j / tail_length)
+                faded_color = tuple(int(c * brightness) for c in color)
+                pixels[idx] = faded_color
         pixels.show()
-        time.sleep(0.05)
-    pixels.fill((0, 0, 0))
-    pixels.show()
+        time.sleep(delay)
+        clear_pixels()
 
-def green_fade():
-    for i in range(0, 256, 5):
-        pixels.fill((0, i, 0))
+def fade_to_color(color, duration=3):
+    steps = 30
+    for i in range(steps):
+        level = i / steps
+        current_color = tuple(int(c * level) for c in color)
+        pixels.fill(current_color)
         pixels.show()
-        time.sleep(0.01)
-    for i in range(255, -1, -5):
-        pixels.fill((0, i, 0))
-        pixels.show()
-        time.sleep(0.01)
-    pixels.fill((0, 0, 0))
-    pixels.show()
+        time.sleep(duration / steps)
 
-# --------- RFID + Light + Sound Logic ---------
-def wait_for_tag_and_respond():
-    print("Waiting for NFC tag...")
+# --- MAIN LOOP ---
+
+print("Ready to scan RFID...")
+
+try:
     while True:
-        white_comet()
-
-        uid = pn532.read_passive_target(timeout=0.1)
-        if uid is not None:
-            print("Tag detected:", [hex(i) for i in uid])
-
-            # Play scan sound and animation
-            scan_sound.play()
-            blue_comet()
-
-            # Delay and play green confirmation
-            time.sleep(2)
-            green_sound.play()
-            green_fade()
-
-# --------- Run Loop ---------
-if __name__ == "__main__":
-    try:
-        wait_for_tag_and_respond()
-    except KeyboardInterrupt:
-        pixels.fill((0, 0, 0))
+        pixels.fill((50, 50, 50))  # Soft white idle glow
         pixels.show()
-        print("Program stopped.")
+
+        id, text = reader.read()
+        print(f"Scanned ID: {id}")
+
+        play_sound(tap_sound)
+
+        comet((0, 0, 255))  # Blue comet
+        play_sound(success_sound)
+
+        fade_to_color((0, 255, 0), duration=3)  # Fade to green
+        time.sleep(1)
+        fade_to_color((50, 50, 50), duration=2)  # Fade back to soft white
+
+except KeyboardInterrupt:
+    print("Stopped.")
+finally:
+    clear_pixels()
+    pygame.mixer.quit()
