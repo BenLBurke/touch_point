@@ -7,7 +7,7 @@ from mfrc522 import SimpleMFRC522
 # --- SETUP ---
 
 # NeoPixel Setup
-NUM_PIXELS = 24
+NUM_PIXELS = 48
 PIXEL_PIN = board.D18
 pixels = neopixel.NeoPixel(PIXEL_PIN, NUM_PIXELS, brightness=0.4, auto_write=False)
 
