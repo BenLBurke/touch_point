@@ -18,7 +18,7 @@ pygame.mixer.init()
 tap_sound = pygame.mixer.Sound("sound_files/mb_accept.wav")
 all_sounds = [{'name':   'progress', 'song':     pygame.mixer.Sound("sound_files/progress.wav"), 'length': 7}
               , {'name': 'haunted',  'song':     pygame.mixer.Sound("sound_files/haunted.wav"), 'length': 5}
-              , {'name': 'monorail', 'song':     pygame.mixer.Sound("sound_files/monorail.wav"), 'lenth': 7}
+              , {'name': 'monorail', 'song':     pygame.mixer.Sound("sound_files/monorail.wav"), 'length': 7}
               , {'name': 'small_world', 'song':  pygame.mixer.Sound("sound_files/small_world.wav"), 'length':5}
               , {'name': 'pirates', 'song':      pygame.mixer.Sound("sound_files/pirates.wav"), 'length': 4}
              ]
