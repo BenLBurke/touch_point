@@ -13,6 +13,16 @@ NUM_PIXELS = 48
 PIXEL_PIN = board.D18
 pixels = neopixel.NeoPixel(PIXEL_PIN, NUM_PIXELS, brightness=0.4, auto_write=False)
 
+firework_colors = [
+    (255, 0, 0),      # red
+    (255, 140, 0),    # orange
+    (255, 255, 0),    # yellow
+    (255, 255, 255),  # white
+    (0, 0, 255),      # blue
+    (128, 0, 128),    # purple
+    (255, 20, 147),   # pink
+]
+
 # Sound Setup
 pygame.mixer.init()
 tap_sound = pygame.mixer.Sound("sound_files/mb_accept.wav")
@@ -21,6 +31,7 @@ all_sounds = [{'name':   'progress', 'song':     pygame.mixer.Sound("sound_files
               , {'name': 'monorail', 'song':     pygame.mixer.Sound("sound_files/monorail.wav"), 'length': 7}
               , {'name': 'small_world', 'song':  pygame.mixer.Sound("sound_files/small_world.wav"), 'length':5}
               , {'name': 'pirates', 'song':      pygame.mixer.Sound("sound_files/pirates.wav"), 'length': 4}
+              , {'name': 'happily', 'song':      pygame.mixer.Sound("sound_files/happily.wav"), 'length': 7}
              ]
 
 
@@ -58,6 +69,25 @@ def fade_to_color(color, duration=3):
         pixels.show()
         time.sleep(duration / steps)
 
+def fade_burst(pixel_index, color, duration=0.5, steps=15):
+    for i in range(steps):
+        brightness = 1 - (i / steps)
+        faded_color = tuple(int(c * brightness) for c in color)
+        pixels[pixel_index] = faded_color
+        pixels.show()
+        time.sleep(duration / steps)
+    pixels[pixel_index] = (0, 0, 0)
+    pixels.show()
+
+def fireworks(num_bursts=10, delay_between=0.2):
+    for _ in range(num_bursts):
+        pixel = random.randint(0, NUM_PIXELS - 1)
+        color = random.choice(firework_colors)
+        pixels[pixel] = color
+        pixels.show()
+        fade_burst(pixel, color)
+        time.sleep(delay_between)
+
 # --- MAIN LOOP ---
 
 print("Ready to scan MagicBand...")
@@ -87,6 +117,8 @@ try:
             fade_to_color((255, 0, 0), duration=sound_length) #red
         elif choice_name == 'monorail':
             fade_to_color((255, 255, 0), duration=sound_length) #yellow
+        elif choice_name == 'happily':
+            fireworks()
         else:
             fade_to_color((0, 255, 0), duration=sound_length)  # Fade to green
         time.sleep(1)
