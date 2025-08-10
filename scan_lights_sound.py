@@ -81,7 +81,11 @@ try:
         time.sleep(1)
         play_sound(success_sound)
         if choice_name == 'haunted':
-            fade_to_color((157, 0, 255), duration=3) # Fade to purple
+            fade_to_color((157, 0, 255), duration=4) # Fade to purple
+        elif choice_name == 'pirates':
+            fade_to_color((255, 0, 0), duration=3)
+        elif choice_name == 'monorail':
+            fade_to_color((255, 255, 0), duration=3)
         else:
             fade_to_color((0, 255, 0), duration=3)  # Fade to green
         time.sleep(1)
