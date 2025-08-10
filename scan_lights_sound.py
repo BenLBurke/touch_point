@@ -1,4 +1,6 @@
 import time
+import random
+
 import board
 import neopixel
 import pygame
@@ -14,7 +16,16 @@ pixels = neopixel.NeoPixel(PIXEL_PIN, NUM_PIXELS, brightness=0.4, auto_write=Fal
 # Sound Setup
 pygame.mixer.init()
 tap_sound = pygame.mixer.Sound("sound_files/mb_accept.wav")
-success_sound = pygame.mixer.Sound("sound_files/progress.wav")
+all_sounds = [{'name':   'progress', 'song':     pygame.mixer.Sound("sound_files/progress.wav")}
+              , {'name': 'haunted',  'song':     pygame.mixer.Sound("sound_files/haunted.wav")}
+              , {'name': 'monorail', 'song':     pygame.mixer.Sound("sound_files/monorail.wav")}
+              , {'name': 'small_world', 'song':  pygame.mixer.Sound("sound_files/small_world.wav")}
+              , {'name': 'pirates', 'song':      pygame.mixer.Sound("sound_files/pirates.wav")}
+             ]
+
+choice = random.choice(all_sounds)
+choice_name = choice['name']
+success_sound = choice['song']
 
 # RFID Reader
 reader = SimpleMFRC522()
@@ -66,8 +77,10 @@ try:
         comet((0, 0, 255))  # Blue comet
         time.sleep(1)
         play_sound(success_sound)
-
-        fade_to_color((0, 255, 0), duration=3)  # Fade to green
+        if choice_name == 'haunted':
+            fade_to_color((157, 0, 255), duration=3) # Fade to purple
+        else:
+            fade_to_color((0, 255, 0), duration=3)  # Fade to green
         time.sleep(1)
         fade_to_color((50, 50, 50), duration=2)  # Fade back to soft white
 
