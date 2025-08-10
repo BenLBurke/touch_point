@@ -13,8 +13,8 @@ pixels = neopixel.NeoPixel(PIXEL_PIN, NUM_PIXELS, brightness=0.4, auto_write=Fal
 
 # Sound Setup
 pygame.mixer.init()
-tap_sound = pygame.mixer.Sound("sounds_files/mb_accept.wav")
-success_sound = pygame.mixer.Sound("sounds_files/progress.wav")
+tap_sound = pygame.mixer.Sound("sound_files/mb_accept.wav")
+success_sound = pygame.mixer.Sound("sound_files/progress.wav")
 
 # RFID Reader
 reader = SimpleMFRC522()
