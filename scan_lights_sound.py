@@ -33,7 +33,7 @@ all_sounds = [{'name':   'progress', 'song':     pygame.mixer.Sound("sound_files
               , {'name': 'pirates', 'song':      pygame.mixer.Sound("sound_files/pirates.wav"), 'length': 4}
               , {'name': 'happily', 'song':      pygame.mixer.Sound("sound_files/happily.wav"), 'length': 7}
               , {'name': 'mickey', 'song':      pygame.mixer.Sound("sound_files/m_i_c_k_e_y.wav"), 'length': 4}
-              , {'name': 'force', 'song':      pygame.mixer.Sound("sound_files/force.wav"), 'length': 7}
+              , {'name': 'force', 'song':      pygame.mixer.Sound("sound_files/force.wav"), 'length': 15}
              ]
 
 
