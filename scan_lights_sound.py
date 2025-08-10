@@ -12,9 +12,9 @@ PIXEL_PIN = board.D18
 pixels = neopixel.NeoPixel(PIXEL_PIN, NUM_PIXELS, brightness=0.4, auto_write=False)
 
 # Sound Setup
-# pygame.mixer.init()
-# tap_sound = pygame.mixer.Sound("sounds_files/mb_accept.wav")
-# success_sound = pygame.mixer.Sound("sounds_files/progress.wav")
+pygame.mixer.init()
+tap_sound = pygame.mixer.Sound("sounds_files/mb_accept.wav")
+success_sound = pygame.mixer.Sound("sounds_files/progress.wav")
 
 # RFID Reader
 reader = SimpleMFRC522()
@@ -51,7 +51,7 @@ def fade_to_color(color, duration=3):
 
 # --- MAIN LOOP ---
 
-print("Ready to scan RFID...")
+print("Ready to scan MagicBand...")
 
 try:
     while True:
@@ -59,12 +59,12 @@ try:
         pixels.show()
 
         id, text = reader.read()
-        print(f"Scanned ID: {id}")
+        print(f"Scanned MagicBand ID: {id}")
 
-        # play_sound(tap_sound)
+        play_sound(tap_sound)
 
         comet((0, 0, 255))  # Blue comet
-        # play_sound(success_sound)
+        play_sound(success_sound)
 
         fade_to_color((0, 255, 0), duration=3)  # Fade to green
         time.sleep(1)
