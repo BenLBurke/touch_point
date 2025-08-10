@@ -64,6 +64,7 @@ try:
         play_sound(tap_sound)
 
         comet((0, 0, 255))  # Blue comet
+        time.sleep(1)
         play_sound(success_sound)
 
         fade_to_color((0, 255, 0), duration=3)  # Fade to green
