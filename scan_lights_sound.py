@@ -33,7 +33,7 @@ all_sounds = [{'name':   'progress', 'song':     pygame.mixer.Sound("sound_files
               , {'name': 'pirates', 'song':      pygame.mixer.Sound("sound_files/pirates.wav"), 'length': 4}
               , {'name': 'happily', 'song':      pygame.mixer.Sound("sound_files/happily.wav"), 'length': 7}
               , {'name': 'mickey', 'song':      pygame.mixer.Sound("sound_files/m_i_c_k_e_y.wav"), 'length': 4}
-              , {'name': 'force', 'song':      pygame.mixer.Sound("sound_files/force.wav"), 'length': 15}
+              , {'name': 'force', 'song':      pygame.mixer.Sound("sound_files/force.wav"), 'length': 9}
              ]
 
 
@@ -122,8 +122,8 @@ try:
         elif choice_name == 'happily':
             fireworks()
         elif choice_name == 'mickey':
+            fade_to_color((255, 0, 0), duration=2) #red
             fade_to_color((255, 255, 0), duration=2) #yellow
-            fade_to_color((255, 0, 0), duration=2) #yellow
         else:
             fade_to_color((0, 255, 0), duration=sound_length)  # Fade to green
         time.sleep(1)
