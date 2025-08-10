@@ -16,11 +16,11 @@ pixels = neopixel.NeoPixel(PIXEL_PIN, NUM_PIXELS, brightness=0.4, auto_write=Fal
 # Sound Setup
 pygame.mixer.init()
 tap_sound = pygame.mixer.Sound("sound_files/mb_accept.wav")
-all_sounds = [{'name':   'progress', 'song':     pygame.mixer.Sound("sound_files/progress.wav")}
-              , {'name': 'haunted',  'song':     pygame.mixer.Sound("sound_files/haunted.wav")}
-              , {'name': 'monorail', 'song':     pygame.mixer.Sound("sound_files/monorail.wav")}
-              , {'name': 'small_world', 'song':  pygame.mixer.Sound("sound_files/small_world.wav")}
-              , {'name': 'pirates', 'song':      pygame.mixer.Sound("sound_files/pirates.wav")}
+all_sounds = [{'name':   'progress', 'song':     pygame.mixer.Sound("sound_files/progress.wav"), 'length': 7}
+              , {'name': 'haunted',  'song':     pygame.mixer.Sound("sound_files/haunted.wav")}, 'length': 5}
+              , {'name': 'monorail', 'song':     pygame.mixer.Sound("sound_files/monorail.wav"), 'lenth': 7}
+              , {'name': 'small_world', 'song':  pygame.mixer.Sound("sound_files/small_world.wav"), 'length':5}
+              , {'name': 'pirates', 'song':      pygame.mixer.Sound("sound_files/pirates.wav"), 'length': 4}
              ]
 
 
@@ -68,6 +68,7 @@ try:
         choice = random.choice(all_sounds)
         choice_name = choice['name']
         success_sound = choice['song']
+        sound_length = choice['length']
       
         pixels.fill((50, 50, 50))  # Soft white idle glow
         pixels.show()
@@ -81,13 +82,13 @@ try:
         time.sleep(1)
         play_sound(success_sound)
         if choice_name == 'haunted':
-            fade_to_color((157, 0, 255), duration=4) # Fade to purple
+            fade_to_color((157, 0, 255), duration=sound_length) # Fade to purple
         elif choice_name == 'pirates':
-            fade_to_color((255, 0, 0), duration=3)
+            fade_to_color((255, 0, 0), duration=sound_length) #red
         elif choice_name == 'monorail':
-            fade_to_color((255, 255, 0), duration=3)
+            fade_to_color((255, 255, 0), duration=sound_length) #yellow
         else:
-            fade_to_color((0, 255, 0), duration=3)  # Fade to green
+            fade_to_color((0, 255, 0), duration=sound_length)  # Fade to green
         time.sleep(1)
         fade_to_color((50, 50, 50), duration=2)  # Fade back to soft white
 
