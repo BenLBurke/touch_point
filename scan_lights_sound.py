@@ -23,9 +23,7 @@ all_sounds = [{'name':   'progress', 'song':     pygame.mixer.Sound("sound_files
               , {'name': 'pirates', 'song':      pygame.mixer.Sound("sound_files/pirates.wav")}
              ]
 
-choice = random.choice(all_sounds)
-choice_name = choice['name']
-success_sound = choice['song']
+
 
 # RFID Reader
 reader = SimpleMFRC522()
@@ -66,6 +64,11 @@ print("Ready to scan MagicBand...")
 
 try:
     while True:
+        #choose a song
+        choice = random.choice(all_sounds)
+        choice_name = choice['name']
+        success_sound = choice['song']
+      
         pixels.fill((50, 50, 50))  # Soft white idle glow
         pixels.show()
 
