@@ -105,7 +105,7 @@ try:
     while True:
         #choose a song
         choice = random.choice(all_sounds)
-        logger.info(choice)
+        logging.info(f"Chosen sound {choice['name']}")
       
         choice_name = choice['name']
         success_sound = choice['song']
