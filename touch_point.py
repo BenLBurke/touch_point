@@ -27,6 +27,7 @@ firework_colors = [
     (255, 255, 255),  # white
     (0, 0, 255),      # blue
     (128, 0, 128),    # purple
+    (75, 0, 130),   # indigo
     (255, 20, 147),   # pink
 ]
 
@@ -39,8 +40,9 @@ all_sounds = [{'name':   'progress', 'song':     pygame.mixer.Sound("sound_files
               , {'name': 'small_world', 'song':  pygame.mixer.Sound("sound_files/small_world.wav"), 'length':5}
               , {'name': 'pirates', 'song':      pygame.mixer.Sound("sound_files/pirates.wav"), 'length': 4}
               , {'name': 'happily', 'song':      pygame.mixer.Sound("sound_files/happily.wav"), 'length': 7}
-              , {'name': 'mickey', 'song':      pygame.mixer.Sound("sound_files/m_i_c_k_e_y.wav"), 'length': 4}
-              , {'name': 'force', 'song':      pygame.mixer.Sound("sound_files/force.wav"), 'length': 9}
+              , {'name': 'mickey', 'song':       pygame.mixer.Sound("sound_files/m_i_c_k_e_y.wav"), 'length': 4}
+              # , {'name': 'force', 'song':      pygame.mixer.Sound("sound_files/force.wav"), 'length': 9}
+              , {'name': 'stop_us', 'song':      pygame.mixer.Sound("sound_files/stop_us_now.wav"), 'length': 9}
              ]
 
 
@@ -67,6 +69,36 @@ def comet(color, tail_length=12, delay=0.03):
             pixels[idx] = faded_color
         pixels.show()
         time.sleep(delay)
+
+def burst():
+    for _ in range(3):
+        idx = random.randint(0, NUM_PIXELS - 1)
+        color = random.choice(firework_colors)
+        pixels[idx] = color
+        pixels.show()
+        time.sleep(0.05)
+        pixels[idx] = (0,0,0)
+        pixels.show()
+
+def rainbow_cycle(duration=9):
+    steps = 60
+    for i in range(steps):
+        for j in range(NUM_PIXELS):
+            rc_index = (j * 256 // NUM_PIXELS + i * 5) % 256
+            pixels[j] = wheel(rc_index)
+        pixels.show()
+        time.sleep(duration / steps)
+
+def wheel(pos):
+    """Generate rainbow colors across 0-255 positions."""
+    if pos < 85:
+        return (255 - pos * 3, pos * 3, 0)
+    elif pos < 170:
+        pos -= 85
+        return (0, 255 - pos * 3, pos * 3)
+    else:
+        pos -= 170
+        return (pos * 3, 0, 255 - pos * 3)
 
 
 def fade_to_color(color, duration=3):
@@ -134,6 +166,13 @@ try:
         elif choice_name == 'mickey':
             fade_to_color((255, 0, 0), duration=2) #red
             fade_to_color((255, 255, 0), duration=2) #yellow
+        elif choice_name == 'stop_us':
+            start = time.time()
+            while time.time() - start < 9:
+                comet(random.choice(colors), tail_length=8, delay=0.03)
+                burst()
+                rainbow_cycle(duration=0.5)  # quick rainbow flashes
+            
         else:
             fade_to_color((0, 255, 0), duration=sound_length)  # Fade to green
         time.sleep(1)
