@@ -50,7 +50,7 @@ all_sounds = [{'name':   'progress', 'song':     load_sound("sound_files/progres
               # , {'name': 'happily', 'song':      load_sound("sound_files/happily.wav"), 'length': 7}
               # , {'name': 'mickey', 'song':       load_sound("sound_files/m_i_c_k_e_y.wav"), 'length': 4}
               # , {'name': 'force', 'song':      load_sound("sound_files/force.wav"), 'length': 9}
-              , {'name': 'stop_us', 'song':      load_sound("sound_files/stop_us_now.wav"), 'length': 9}
+              , {'name': 'stop_us', 'song':      load_sound("sound_files/stop_us_now.wav"), 'length': 7}
              ]
 
 
@@ -179,7 +179,7 @@ try:
             while time.time() - start < 9:
                 comet(random.choice(firework_colors), tail_length=8, delay=0.03)
                 burst()
-                rainbow_cycle(duration=0.5)  # quick rainbow flashes
+                rainbow_cycle(duration=1)  # quick rainbow flashes
             
         else:
             fade_to_color((0, 255, 0), duration=sound_length)  # Fade to green
