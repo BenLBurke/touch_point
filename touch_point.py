@@ -174,12 +174,12 @@ try:
         elif choice_name == 'mickey':
             fade_to_color((255, 0, 0), duration=2) #red
             fade_to_color((255, 255, 0), duration=2) #yellow
-        # elif choice_name == 'stop_us':
-        #     start = time.time()
-        #     while time.time() - start < 9:
-        #         comet(random.choice(colors), tail_length=8, delay=0.03)
-        #         burst()
-        #         rainbow_cycle(duration=0.5)  # quick rainbow flashes
+        elif choice_name == 'stop_us':
+            start = time.time()
+            while time.time() - start < 9:
+                comet(random.choice(firework_colors), tail_length=8, delay=0.03)
+                burst()
+                rainbow_cycle(duration=0.5)  # quick rainbow flashes
             
         else:
             fade_to_color((0, 255, 0), duration=sound_length)  # Fade to green
