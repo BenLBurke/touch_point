@@ -33,7 +33,7 @@ firework_colors = [
 
 pygame.mixer.init()
 
-def load_sound(path, volume=0.8):
+def load_sound(path, volume=1.0):
     """Load a sound and set its volume (0.0 to 1.0)."""
     sound = pygame.mixer.Sound(path)
     sound.set_volume(volume)
