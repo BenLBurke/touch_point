@@ -43,12 +43,12 @@ def load_sound(path, volume=0.8):
 pygame.mixer.init()
 tap_sound = pygame.mixer.Sound("sound_files/mb_accept.wav")
 all_sounds = [{'name':   'progress', 'song':     load_sound("sound_files/progress.wav"), 'length': 7}
-              , {'name': 'haunted',  'song':     load_sound("sound_files/haunted.wav"), 'length': 5}
-              , {'name': 'monorail', 'song':     load_sound("sound_files/monorail.wav"), 'length': 7}
-              , {'name': 'small_world', 'song':  load_sound("sound_files/small_world.wav"), 'length':5}
-              , {'name': 'pirates', 'song':      load_sound("sound_files/pirates.wav"), 'length': 4}
-              , {'name': 'happily', 'song':      load_sound("sound_files/happily.wav"), 'length': 7}
-              , {'name': 'mickey', 'song':       load_sound("sound_files/m_i_c_k_e_y.wav"), 'length': 4}
+              # , {'name': 'haunted',  'song':     load_sound("sound_files/haunted.wav"), 'length': 5}
+              # , {'name': 'monorail', 'song':     load_sound("sound_files/monorail.wav"), 'length': 7}
+              # , {'name': 'small_world', 'song':  load_sound("sound_files/small_world.wav"), 'length':5}
+              # , {'name': 'pirates', 'song':      load_sound("sound_files/pirates.wav"), 'length': 4}
+              # , {'name': 'happily', 'song':      load_sound("sound_files/happily.wav"), 'length': 7}
+              # , {'name': 'mickey', 'song':       load_sound("sound_files/m_i_c_k_e_y.wav"), 'length': 4}
               # , {'name': 'force', 'song':      load_sound("sound_files/force.wav"), 'length': 9}
               , {'name': 'stop_us', 'song':      load_sound("sound_files/stop_us_now.wav"), 'length': 9}
              ]
