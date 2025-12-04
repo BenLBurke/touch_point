@@ -51,6 +51,8 @@ all_sounds = [{'name':   'progress', 'song':     load_sound("sound_files/progres
               , {'name': 'mickey', 'song':       load_sound("sound_files/m_i_c_k_e_y.wav"), 'length': 4}
               , {'name': 'force', 'song':        load_sound("sound_files/yoda_force.wav"), 'length': 9}
               , {'name': 'stop_us', 'song':      load_sound("sound_files/stop_us_now.wav"), 'length': 7}
+              , {'name': 'tiki', 'song':         load_sound("sound_files/tiki_room_cut.wav"), 'length': 13}
+              , {'name': 'saddle','song':        load_sound("sound_files/blood-on-the-saddle_cut.wav"), 'length':14}
              ]
 
 
@@ -165,13 +167,13 @@ try:
         play_sound(success_sound)
         if choice_name == 'haunted':
             fade_to_color((157, 0, 255), duration=sound_length) # Fade to purple
-        elif choice_name == 'pirates':
+        elif choice_name == 'pirates' or choice_name == 'saddle':
             fade_to_color((255, 0, 0), duration=sound_length) #red
         elif choice_name == 'monorail':
             fade_to_color((255, 255, 0), duration=sound_length) #yellow
         elif choice_name == 'happily':
             fireworks()
-        elif choice_name == 'mickey':
+        elif choice_name == 'mickey' or choice_name == 'tiki':
             fade_to_color((255, 0, 0), duration=2) #red
             fade_to_color((255, 255, 0), duration=2) #yellow
         elif choice_name == 'stop_us':
