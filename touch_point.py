@@ -51,7 +51,7 @@ all_sounds = [{'name':   'progress', 'song':     load_sound("sound_files/progres
               , {'name': 'mickey', 'song':       load_sound("sound_files/m_i_c_k_e_y.wav"), 'length': 4}
               , {'name': 'force', 'song':        load_sound("sound_files/yoda_force.wav"), 'length': 9}
               , {'name': 'stop_us', 'song':      load_sound("sound_files/stop_us_now.wav"), 'length': 7}
-              , {'name': 'tiki', 'song':         load_sound("sound_files/tiki_room_cut.wav"), 'length': 13}
+              # , {'name': 'tiki', 'song':         load_sound("sound_files/tiki_room_cut.wav"), 'length': 13}
               , {'name': 'saddle','song':        load_sound("sound_files/blood-on-the-saddle_cut.wav"), 'length':14}
              ]
 
