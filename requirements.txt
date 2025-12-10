@@ -1,5 +1,5 @@
-board==1.0
-rpi-ws281x==5.0
-adafruit-circuitpython-neopixel==6.3
-mfrc522==0.0.7
-pygame==2.6
+board
+rpi-ws281x
+adafruit-circuitpython-neopixel
+mfrc522
+pygame
