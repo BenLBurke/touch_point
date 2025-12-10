@@ -118,7 +118,8 @@ sudo pm2 start "$FULL_APP_PATH" \
 echo ">>> Saving PM2 process list and enabling startup..."
 sudo pm2 save
 # This generates a startup command for systemd and runs it
-sudo pm2 startup systemd -u "$USER" --hp "/home/$USER" | sudo bash
+sudo pm2 startup systemd -u root --hp /root | sudo bash
+sudo pm2 save
 
 echo "=== Setup complete! ==="
 echo "Repo:      $REPO_URL"
