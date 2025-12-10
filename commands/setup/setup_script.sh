@@ -9,7 +9,7 @@ set -e
 REPO_URL="https://github.com/BenLBurke/touch_point.git"
 
 # Directory where the app should live
-APP_DIR="/home/pi/touch_point"
+APP_DIR="~/touch_point"
 
 # Name of the Python virtual environment folder
 VENV_DIR="venv"
@@ -109,15 +109,16 @@ if [ ! -f "$FULL_APP_PATH" ]; then
 fi
 
 echo ">>> Starting $PM2_APP_NAME with PM2 using interpreter: $VENV_PYTHON"
-pm2 start "$FULL_APP_PATH" \
+sudo pm2 start "$FULL_APP_PATH" \
   --name "$PM2_APP_NAME" \
-  --interpreter "$VENV_PYTHON"
+  --interpreter "$VENV_PYTHON" \
+  --cwd $APP_DIR
 
 # Save PM2 process list and enable startup
 echo ">>> Saving PM2 process list and enabling startup..."
-pm2 save
+sudo pm2 save
 # This generates a startup command for systemd and runs it
-pm2 startup systemd -u "$USER" --hp "/home/$USER" | sudo bash
+sudo pm2 startup systemd -u "$USER" --hp "/home/$USER" | sudo bash
 
 echo "=== Setup complete! ==="
 echo "Repo:      $REPO_URL"
@@ -134,3 +135,11 @@ echo "  cd $APP_DIR"
 echo "  git pull"
 echo "  source $VENV_DIR/bin/activate && pip install -r requirements.txt && deactivate"
 echo "  pm2 restart $PM2_APP_NAME"
+echo "NEXT STEPS to be done manually:"
+echo "Set up cron schedule with logs:"
+echo "  crontab-e"
+echo "  0 2 * * * $APP_DIR/commands/pull.sh >> $APP_DIR/cron.log #for 2am everyday"
+echo "Ensure Sound works:"
+echo "  sudo aplay -l"
+echo "  amixer -c 0 get PCM"
+
