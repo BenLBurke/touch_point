@@ -25,7 +25,7 @@ PM2_APP_NAME="touch_point"
 ### NO NEED TO EDIT BELOW (usually)
 ### ==============================
 
-echo "=== Magic Orb setup starting ==="
+echo "=== Touch Point setup starting ==="
 
 # Ensure we are not root but have sudo
 if [ "$EUID" -eq 0 ]; then
@@ -82,12 +82,12 @@ echo ">>> Activating virtual environment and installing Python deps..."
 # shellcheck disable=SC1090
 source "$VENV_DIR/bin/activate"
 
-pip install --upgrade pip wheel
+python -m pip install --upgrade pip wheel
 
 # Install requirements if present
 if [ -f "requirements.txt" ]; then
   echo ">>> Installing requirements.txt..."
-  pip install -r requirements.txt
+  python -m pip install -r requirements.txt
 else
   echo ">>> No requirements.txt found. Skipping Python deps install."
 fi
