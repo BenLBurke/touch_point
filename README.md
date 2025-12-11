@@ -29,3 +29,4 @@ To run:
 ```bash
 sudo ~/touch_point/venv/bin/python touch_point.py
 ```
+# [3D Print of Reader](https://www.thingiverse.com/thing:4549215)
