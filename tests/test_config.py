@@ -1,0 +1,54 @@
+import importlib
+
+from touchpoint import config
+
+ENV_VARS = (
+    "TOUCHPOINT_NUM_PIXELS",
+    "TOUCHPOINT_PIXEL_PIN",
+    "TOUCHPOINT_BRIGHTNESS",
+    "TOUCHPOINT_AUDIO_DRIVER",
+    "TOUCHPOINT_AUDIO_DEVICE",
+)
+
+
+def _reload_with_clean_env(monkeypatch):
+    for var in ENV_VARS:
+        monkeypatch.delenv(var, raising=False)
+    return importlib.reload(config)
+
+
+def test_defaults_when_env_unset(monkeypatch):
+    reloaded = _reload_with_clean_env(monkeypatch)
+    try:
+        assert reloaded.NUM_PIXELS == 48
+        assert reloaded.PIXEL_PIN_NAME == "D18"
+        assert reloaded.BRIGHTNESS == 0.4
+        assert reloaded.AUDIO_DRIVER == "alsa"
+        assert reloaded.AUDIO_DEVICE == "plughw:2,0"
+    finally:
+        importlib.reload(config)
+
+
+def test_env_overrides_are_applied(monkeypatch):
+    _reload_with_clean_env(monkeypatch)
+    monkeypatch.setenv("TOUCHPOINT_NUM_PIXELS", "12")
+    monkeypatch.setenv("TOUCHPOINT_AUDIO_DEVICE", "plughw:1,0")
+    reloaded = importlib.reload(config)
+    try:
+        assert reloaded.NUM_PIXELS == 12
+        assert reloaded.AUDIO_DEVICE == "plughw:1,0"
+    finally:
+        monkeypatch.delenv("TOUCHPOINT_NUM_PIXELS", raising=False)
+        monkeypatch.delenv("TOUCHPOINT_AUDIO_DEVICE", raising=False)
+        importlib.reload(config)
+
+
+def test_invalid_numeric_env_falls_back_to_default(monkeypatch):
+    _reload_with_clean_env(monkeypatch)
+    monkeypatch.setenv("TOUCHPOINT_NUM_PIXELS", "not-a-number")
+    reloaded = importlib.reload(config)
+    try:
+        assert reloaded.NUM_PIXELS == 48
+    finally:
+        monkeypatch.delenv("TOUCHPOINT_NUM_PIXELS", raising=False)
+        importlib.reload(config)
