@@ -1,0 +1,15 @@
+[Unit]
+Description=Touch Point WiFi onboarding portal
+After=NetworkManager.service
+Wants=NetworkManager.service
+
+[Service]
+Type=simple
+WorkingDirectory=__APP_DIR__
+ExecStart=__APP_DIR__/venv/bin/python -m wifi_portal.main
+Restart=on-failure
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target

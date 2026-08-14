@@ -1,6 +1,6 @@
 # Spec: WiFi Onboarding + Gift Device Dashboard
 
-Status: Draft
+Status: §3 (WiFi Onboarding) implemented — see `wifi_portal/` and the "WiFi onboarding portal" section of `README.md`. §4-6 (phone-home check-ins, fleet dashboard, Tailscale remote access) remain unbuilt; deliberately scoped out of the first cut, worth revisiting once there's more than one gifted device to track.
 Author: Claude (drafted on request), for benleeburke@gmail.com
 Date: 2026-08-08
 

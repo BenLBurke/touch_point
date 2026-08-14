@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Wake up your Touch Point</title>
+<style>
+  :root {
+    --paper: #FFF8EE;
+    --ink: #2B2013;
+    --ink-dim: #7A6A50;
+    --line: #E8DCC4;
+    --accent: #C2410C;
+    --accent-soft: #FCEBDD;
+    --glow: #2E6F63;
+    --danger: #B23A3A;
+    --danger-bg: #FBEAEA;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 18px 60px;
+  }
+  .sparkle {
+    font-size: 1.6rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-size: 1.5rem;
+    text-align: center;
+    margin: 0 0 6px;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  p.sub {
+    color: var(--ink-dim);
+    text-align: center;
+    font-size: 0.92rem;
+    margin: 0 0 28px;
+    max-width: 34ch;
+    line-height: 1.5;
+  }
+  .card {
+    width: 100%;
+    max-width: 380px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 6px;
+    box-shadow: 0 1px 2px rgba(43,32,19,0.04);
+  }
+  .net-list { list-style: none; margin: 0; padding: 0; }
+  .net-item { border-bottom: 1px solid var(--line); }
+  .net-item:last-child { border-bottom: none; }
+  .net-item label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 14px;
+    cursor: pointer;
+  }
+  .net-item input[type="radio"] { accent-color: var(--accent); width: 18px; height: 18px; }
+  .net-name { flex: 1; font-size: 0.98rem; }
+  .signal { display: flex; gap: 2px; align-items: flex-end; height: 14px; }
+  .signal span { width: 3px; background: var(--line); border-radius: 1px; }
+  .signal span:nth-child(1) { height: 5px; }
+  .signal span:nth-child(2) { height: 8px; }
+  .signal span:nth-child(3) { height: 11px; }
+  .signal span:nth-child(4) { height: 14px; }
+  .signal.on span { background: var(--glow); }
+  .lock { color: var(--ink-dim); font-size: 0.8rem; }
+
+  .empty-state {
+    padding: 24px 14px;
+    text-align: center;
+    color: var(--ink-dim);
+    font-size: 0.92rem;
+  }
+
+  .field { padding: 14px; border-top: 1px solid var(--line); display: none; }
+  .field.visible { display: block; }
+  .field label { display: block; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-dim); margin-bottom: 6px; }
+  .pw-row { display: flex; gap: 8px; }
+  .pw-row input {
+    flex: 1;
+    font-size: 1rem;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .pw-row button {
+    border: 1px solid var(--line);
+    background: var(--paper);
+    border-radius: 8px;
+    padding: 0 14px;
+    font-size: 0.85rem;
+    color: var(--ink-dim);
+  }
+
+  .actions { padding: 14px; }
+  .connect-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 1.02rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .connect-btn:disabled { opacity: 0.5; }
+
+  .rescan {
+    margin-top: 18px;
+    background: none;
+    border: none;
+    color: var(--ink-dim);
+    font-size: 0.85rem;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .status-panel {
+    width: 100%;
+    max-width: 380px;
+    margin-top: 18px;
+    padding: 18px;
+    border-radius: 14px;
+    text-align: center;
+    font-size: 0.95rem;
+    display: none;
+  }
+  .status-panel.visible { display: block; }
+  .status-panel.connecting { background: var(--accent-soft); color: var(--accent); }
+  .status-panel.success { background: #E9F3EA; color: var(--glow); }
+  .status-panel.failed { background: var(--danger-bg); color: var(--danger); }
+  .ring {
+    width: 26px; height: 26px;
+    margin: 0 auto 10px;
+    border: 3px solid rgba(0,0,0,0.12);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ring { animation: none; }
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  footer { margin-top: 28px; color: var(--ink-dim); font-size: 0.78rem; text-align: center; }
+</style>
+</head>
+<body>
+  <div class="sparkle">✨</div>
+  <h1>Let's wake up your Touch Point</h1>
+  <p class="sub">Pick your home WiFi below and it'll come to life — ready for a tap.</p>
+
+  <form class="card" id="setup-form">
+    {% if networks %}
+    <ul class="net-list">
+      {% for net in networks %}
+      <li class="net-item">
+        <label>
+          <input type="radio" name="ssid" value="{{ net.ssid }}" {% if net.security %}data-secure="1"{% endif %} required>
+          <span class="net-name">{{ net.ssid }}</span>
+          {% if net.security %}<span class="lock">🔒</span>{% endif %}
+          <span class="signal {% if net.signal >= 25 %}on{% endif %}">
+            <span style="{% if net.signal < 25 %}background:var(--line){% endif %}"></span>
+            <span style="{% if net.signal < 50 %}background:var(--line){% endif %}"></span>
+            <span style="{% if net.signal < 70 %}background:var(--line){% endif %}"></span>
+            <span style="{% if net.signal < 85 %}background:var(--line){% endif %}"></span>
+          </span>
+        </label>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">No networks found yet. Try moving the Touch Point closer to your router, then rescan below.</div>
+    {% endif %}
+
+    <div class="field" id="password-field">
+      <label for="password">Password</label>
+      <div class="pw-row">
+        <input type="password" id="password" name="password" autocomplete="off" placeholder="Network password">
+        <button type="button" id="toggle-pw">Show</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="connect-btn" id="connect-btn">Connect</button>
+    </div>
+  </form>
+
+  <button class="rescan" id="rescan-btn" type="button">Don't see your network? Rescan</button>
+
+  <div class="status-panel" id="status-panel">
+    <div class="ring" id="status-ring"></div>
+    <div id="status-text"></div>
+  </div>
+
+  <footer>Touch Point setup &middot; this page only works while connected to "Touch Point Setup"</footer>
+
+<script>
+(function () {
+  var form = document.getElementById("setup-form");
+  var connectBtn = document.getElementById("connect-btn");
+  var pwField = document.getElementById("password-field");
+  var pwInput = document.getElementById("password");
+  var togglePw = document.getElementById("toggle-pw");
+  var statusPanel = document.getElementById("status-panel");
+  var statusText = document.getElementById("status-text");
+  var statusRing = document.getElementById("status-ring");
+  var rescanBtn = document.getElementById("rescan-btn");
+  var pollTimer = null;
+
+  document.querySelectorAll('input[name="ssid"]').forEach(function (radio) {
+    radio.addEventListener("change", function () {
+      var secure = radio.hasAttribute("data-secure");
+      pwField.classList.toggle("visible", secure);
+      pwInput.required = secure;
+    });
+  });
+
+  togglePw.addEventListener("click", function () {
+    var showing = pwInput.type === "text";
+    pwInput.type = showing ? "password" : "text";
+    togglePw.textContent = showing ? "Show" : "Hide";
+  });
+
+  function setStatus(kind, text) {
+    statusPanel.className = "status-panel visible " + kind;
+    statusRing.style.display = kind === "connecting" ? "block" : "none";
+    statusText.textContent = text;
+  }
+
+  function poll() {
+    fetch("/status").then(function (r) { return r.json(); }).then(function (data) {
+      if (data.status === "connecting") {
+        setStatus("connecting", "Waking up your Touch Point on “" + data.ssid + "”…");
+        pollTimer = setTimeout(poll, 1500);
+      } else if (data.status === "success") {
+        setStatus("success", "🎉 Your Touch Point is alive! Tap it with a MagicBand and see what happens. You can close this page now.");
+      } else if (data.status === "failed") {
+        setStatus("failed", data.error || "Couldn't connect. Check the password and try again.");
+        connectBtn.disabled = false;
+      }
+    }).catch(function () {
+      // The AP may have dropped mid-handoff as the Pi joins the real
+      // network -- that's actually the success path, not an error.
+      setStatus("success", "🎉 Your Touch Point is finding its way home. You can close this page now.");
+    });
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    connectBtn.disabled = true;
+    var formData = new FormData(form);
+    fetch("/connect", { method: "POST", body: formData })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.ok) {
+          poll();
+        } else {
+          setStatus("failed", data.error || "Something went wrong.");
+          connectBtn.disabled = false;
+        }
+      });
+  });
+
+  rescanBtn.addEventListener("click", function () {
+    rescanBtn.disabled = true;
+    rescanBtn.textContent = "Rescanning…";
+    fetch("/rescan", { method: "POST" }).then(function () {
+      window.location.reload();
+    });
+  });
+})();
+</script>
+</body>
+</html>

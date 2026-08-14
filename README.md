@@ -68,7 +68,8 @@ sudo ~/touch_point/venv/bin/python touch_point.py
   - `hardware.py` — the only place that touches real GPIO/SPI/audio hardware.
 - `tests/` — automated `pytest` suite. Runs on any machine; hardware libraries are faked out.
 - `hardware_checks/` — small manual scripts for bringing up one piece of hardware at a time on a real Pi (not run by `pytest`).
-- `commands/` — deployment scripts (`setup_script.sh`, `pull.sh` for the pm2/cron update loop).
+- `commands/` — deployment scripts (`setup_script.sh`, `pull.sh` for the pm2/cron update loop, `install_wifi_portal.sh` for the WiFi onboarding portal).
+- `wifi_portal/` — the WiFi onboarding captive portal (see below). Independent of `touch_point.py` — a separate systemd service, not something the main app imports.
 
 # Configuration (environment variables)
 | Variable                  | Default          | Purpose                                             |
@@ -94,6 +95,29 @@ pip install -r requirements-dev.txt
 pytest
 ```
 The suite fakes out `board`, `neopixel`, `pygame`, and `mfrc522`, so it runs on a laptop/CI with no Pi or wired hardware attached. A GitHub Actions workflow (`.github/workflows/tests.yml`) runs it on every push.
+
+# WiFi onboarding portal
+Implements section 3 of [`docs/specs/wifi-login-and-device-dashboard.md`](docs/specs/wifi-login-and-device-dashboard.md) — lets someone connect the Pi to their own WiFi from their phone, with no SSH/keyboard/monitor. The rest of that spec (phone-home check-ins, a fleet dashboard, Tailscale remote access for multiple gifted devices) is intentionally out of scope here; this is just the onboarding piece.
+
+**How it works:** on boot, `wifi_portal` waits up to 45s for the Pi to join a previously-known network on its own. If that doesn't happen, it scans for nearby networks (has to happen *before* the AP comes up — a Pi Zero's single WiFi radio can't scan and run an access point at the same time), then broadcasts an open network called **"Touch Point Setup"**. Connecting to that from a phone should auto-pop a "Sign in to network" style page (same pattern as hotel/airport WiFi) where you pick your real network and enter its password. On success, the Pi joins it and the portal shuts down; on failure, the setup AP comes back so you can retry.
+
+This is a separate systemd service from `touch_point.py` — the two don't depend on each other, since the RFID/LED/sound app needs no network at all.
+
+**Install** (after the main `setup_script.sh` has already set up the venv):
+```bash
+cd ~/touch_point
+bash commands/setup/install_wifi_portal.sh
+```
+Test it immediately without rebooting:
+```bash
+sudo systemctl start wifi-portal
+sudo journalctl -u wifi-portal -f
+```
+
+**Caveats worth knowing before you rely on this:**
+- Only tested at the code level in this repo (`pytest` covers the network-state logic and the Flask routes with everything mocked out) — the actual AP/captive-portal behavior needs verification on real hardware, since phone OS captive-portal detection is notoriously finicky per iOS/Android version.
+- The dnsmasq captive-portal redirect assumes NetworkManager's default shared-mode gateway address, `10.42.0.1`. If your setup uses a different subnet, check `ip addr show wlan0` while the AP is running and update `wifi_portal/dnsmasq-captive.conf` accordingly.
+- No physical reset button or NFC "reset tag" flow yet (spec §3.4 mentions this as an option) — right now, re-triggering onboarding means clearing the saved connection profile manually (`nmcli connection delete <ssid>`) and rebooting.
 
 # Will this work on a Raspberry Pi Zero?
 Yes. The Pi Zero W and Zero 2 W run the same Raspberry Pi OS as the 3/4/5, expose the same 40-pin header, and `touch_point.py` runs on them unmodified. A few practical notes:
