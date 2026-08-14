@@ -108,11 +108,11 @@ if [ ! -f "$FULL_APP_PATH" ]; then
   exit 1
 fi
 
-echo ">>> Starting $PM2_APP_NAME with PM2 using interpreter: $VENV_PYTHON"
-sudo pm2 start "$FULL_APP_PATH" \
-  --name "$PM2_APP_NAME" \
-  --interpreter "$VENV_PYTHON" \
-  --cwd $APP_DIR
+echo ">>> Starting $PM2_APP_NAME with PM2 using ecosystem.config.js..."
+echo "    Edit $APP_DIR/ecosystem.config.js first if your audio device or LED count"
+echo "    differ from the defaults (run 'aplay -l' to check the audio device)."
+cd "$APP_DIR"
+sudo pm2 start ecosystem.config.js
 
 # Save PM2 process list and enable startup
 echo ">>> Saving PM2 process list and enabling startup..."
