@@ -76,6 +76,7 @@ sudo ~/touch_point/venv/bin/python touch_point.py
 | `TOUCHPOINT_NUM_PIXELS`    | `48`              | Number of LEDs on the ring                           |
 | `TOUCHPOINT_PIXEL_PIN`     | `D18`             | `board` attribute name for the NeoPixel data pin      |
 | `TOUCHPOINT_BRIGHTNESS`    | `0.4`             | NeoPixel brightness, 0–1                              |
+| `TOUCHPOINT_VOLUME`        | `1.0`             | Default playback volume, 0–1 (clamped to that range)  |
 | `TOUCHPOINT_AUDIO_DRIVER`  | `alsa`            | SDL audio driver                                      |
 | `TOUCHPOINT_AUDIO_DEVICE`  | `plughw:2,0`      | ALSA device for the USB sound card (see `aplay -l`)   |
 | `TOUCHPOINT_SOUND_DIR`     | `sound_files/`    | Directory containing the wav files                    |

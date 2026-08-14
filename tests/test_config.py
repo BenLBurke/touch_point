@@ -6,6 +6,7 @@ ENV_VARS = (
     "TOUCHPOINT_NUM_PIXELS",
     "TOUCHPOINT_PIXEL_PIN",
     "TOUCHPOINT_BRIGHTNESS",
+    "TOUCHPOINT_VOLUME",
     "TOUCHPOINT_AUDIO_DRIVER",
     "TOUCHPOINT_AUDIO_DEVICE",
 )
@@ -23,6 +24,7 @@ def test_defaults_when_env_unset(monkeypatch):
         assert reloaded.NUM_PIXELS == 48
         assert reloaded.PIXEL_PIN_NAME == "D18"
         assert reloaded.BRIGHTNESS == 0.4
+        assert reloaded.VOLUME == 1.0
         assert reloaded.AUDIO_DRIVER == "alsa"
         assert reloaded.AUDIO_DEVICE == "plughw:2,0"
     finally:
@@ -40,6 +42,25 @@ def test_env_overrides_are_applied(monkeypatch):
     finally:
         monkeypatch.delenv("TOUCHPOINT_NUM_PIXELS", raising=False)
         monkeypatch.delenv("TOUCHPOINT_AUDIO_DEVICE", raising=False)
+        importlib.reload(config)
+
+
+def test_volume_is_clamped_to_valid_range(monkeypatch):
+    _reload_with_clean_env(monkeypatch)
+    monkeypatch.setenv("TOUCHPOINT_VOLUME", "1.5")
+    reloaded = importlib.reload(config)
+    try:
+        assert reloaded.VOLUME == 1.0
+    finally:
+        monkeypatch.delenv("TOUCHPOINT_VOLUME", raising=False)
+        importlib.reload(config)
+
+    monkeypatch.setenv("TOUCHPOINT_VOLUME", "-0.5")
+    reloaded = importlib.reload(config)
+    try:
+        assert reloaded.VOLUME == 0.0
+    finally:
+        monkeypatch.delenv("TOUCHPOINT_VOLUME", raising=False)
         importlib.reload(config)
 
 

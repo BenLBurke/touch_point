@@ -28,6 +28,7 @@ def _env_float(name: str, default: float) -> float:
 NUM_PIXELS = _env_int("TOUCHPOINT_NUM_PIXELS", 48)
 PIXEL_PIN_NAME = os.environ.get("TOUCHPOINT_PIXEL_PIN", "D18")
 BRIGHTNESS = _env_float("TOUCHPOINT_BRIGHTNESS", 0.4)
+VOLUME = max(0.0, min(1.0, _env_float("TOUCHPOINT_VOLUME", 1.0)))
 
 AUDIO_DRIVER = os.environ.get("TOUCHPOINT_AUDIO_DRIVER", "alsa")
 AUDIO_DEVICE = os.environ.get("TOUCHPOINT_AUDIO_DEVICE", "plughw:2,0")

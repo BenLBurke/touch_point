@@ -48,8 +48,10 @@ def init_audio():
     return pygame
 
 
-def load_sound(pygame_module, path, volume: float = 1.0):
-    """Load a WAV and set its volume (0.0 to 1.0)."""
+def load_sound(pygame_module, path, volume: float = None):
+    """Load a WAV and set its volume (0.0 to 1.0). Defaults to config.VOLUME."""
+    if volume is None:
+        volume = config.VOLUME
     sound = pygame_module.mixer.Sound(str(path))
     sound.set_volume(volume)
     return sound

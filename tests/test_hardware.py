@@ -110,3 +110,35 @@ def test_load_all_sounds_covers_the_whole_library(monkeypatch, tmp_path):
         assert library[clip.name]["length"] == clip.length
     # tap sound + one per library clip
     assert len(loaded_paths) == 1 + len(sounds.SOUND_LIBRARY)
+
+
+def test_load_sound_defaults_to_configured_volume(monkeypatch, tmp_path):
+    class FakeSound:
+        def __init__(self, path):
+            self.volume = None
+
+        def set_volume(self, volume):
+            self.volume = volume
+
+    fake_pygame = types.SimpleNamespace(mixer=types.SimpleNamespace(Sound=FakeSound))
+    monkeypatch.setattr(config, "VOLUME", 0.6)
+
+    sound = hardware.load_sound(fake_pygame, tmp_path / "clip.wav")
+
+    assert sound.volume == 0.6
+
+
+def test_load_sound_explicit_volume_overrides_config(monkeypatch, tmp_path):
+    class FakeSound:
+        def __init__(self, path):
+            self.volume = None
+
+        def set_volume(self, volume):
+            self.volume = volume
+
+    fake_pygame = types.SimpleNamespace(mixer=types.SimpleNamespace(Sound=FakeSound))
+    monkeypatch.setattr(config, "VOLUME", 0.6)
+
+    sound = hardware.load_sound(fake_pygame, tmp_path / "clip.wav", volume=0.2)
+
+    assert sound.volume == 0.2
