@@ -6,6 +6,8 @@ To include upon read:
 - Sounds
 
 # Wiring
+![System block diagram](docs/schematics/system-overview.svg)
+
 ### [RFID-RC522]([url](https://www.aliexpress.us/item/3256807702682933.html?src=google&pdp_npi=4%40dis%21USD%211.93%211.83%21%21%21%21%21%40%2112000042733086095%21ppc%21%21%21&src=google&albch=shopping&acnt=708-803-3821&isdl=y&slnk=&plac=&mtctp=&albbt=Google_7_shopping&aff_platform=google&aff_short_key=UneMJZVf&gclsrc=aw.ds&albagn=888888&ds_e_adid=&ds_e_matchtype=&ds_e_device=c&ds_e_network=x&ds_e_product_group_id=&ds_e_product_id=en3256807702682933&ds_e_product_merchant_id=5361118735&ds_e_product_country=US&ds_e_product_language=en&ds_e_product_channel=online&ds_e_product_store_id=&ds_url_v=2&albcp=19108282527&albag=&isSmbAutoCall=false&needSmbHouyi=false&gad_source=4&gad_campaignid=19108284222&gbraid=0AAAAAD6I-hG8uvCz8eJx-4KrPtgV7_Q_m&gclid=CjwKCAiA3L_JBhAlEiwAlcWO5zNo3PJEIUwrV0wFFY6Pn6aLm5L0AHmTl1ij-rV7HRp9U0M2BvWzFxoC5BoQAvD_BwE&gatewayAdapt=glo2usa))
 Standard hardware SPI0 wiring — this is what `touchpoint/hardware.py`'s `init_reader()` (via the `mfrc522` library's `SimpleMFRC522`) expects by default, so no pin numbers need to be set in code or config.
 
@@ -19,6 +21,8 @@ Standard hardware SPI0 wiring — this is what `touchpoint/hardware.py`'s `init_
 | RST       | GPIO25 / Pin 22              | Reset — matches the `mfrc522` library's default    |
 | 3.3V      | Pin 1 or 17                  | **3.3V only** — the RC522 is not 5V tolerant       |
 | GND       | Pin 6 (or any GND pin)       | Ground                                             |
+
+![RC522 wiring diagram](docs/schematics/rfid-wiring.svg)
 
 ### WS2812B / NeoPixel ring
 Data pin matches `TOUCHPOINT_PIXEL_PIN` in `touchpoint/config.py` (default `D18`).
@@ -34,6 +38,21 @@ Data pin matches `TOUCHPOINT_PIXEL_PIN` in `touchpoint/config.py` (default `D18`
 - The Pi's GPIO is 3.3V logic driving a data line the WS2812B spec expects at 5V. For a short run inside one enclosure this is usually fine as-is. If you see flickering or wrong colors, add a logic-level shifter (e.g. 74AHCT125) on the data line and a ~300-470Ω resistor in series right at the first pixel — both are standard WS2812 fixes.
 - A ~1000µF capacitor across 5V/GND at the start of the strip absorbs the inrush current spike when all pixels switch on at once.
 
+![LED ring wiring diagram](docs/schematics/led-wiring.svg)
+
+### Audio — USB DAC → Class-D amp → speaker
+The Pi has no built-in audio output, so this is two boards doing two separate jobs: a USB sound card converts the Pi's digital audio into an analog signal (a DAC), and a small Class-D amp boosts that signal enough to actually drive a speaker.
+
+| Connection                    | Notes                                                        |
+| ------------------------------ | ------------------------------------------------------------- |
+| Pi USB port → USB sound card    | Self-powered over USB; appears as its own ALSA card (`aplay -l`) |
+| Sound card L channel → amp `A+`/`A-` | One channel is enough for a single mono speaker            |
+| Pi 5V (Pin 2/4) → amp `Vin`     | Amp draws little current; fine to power straight off the Pi   |
+| Pi GND → amp `GND`              | —                                                             |
+| Amp `SD` → amp `Vin`            | **Bridge these together** — left floating, the amp stays in shutdown/muted mode |
+| Amp output `+`/`-` → speaker    | Polarity only affects phase with a single speaker, not damage-critical |
+
+![Audio chain wiring diagram](docs/schematics/audio-wiring.svg)
 
 To run:
 ```bash

@@ -1,0 +1,35 @@
+<svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, Consolas, Menlo, monospace" role="img" aria-label="Pi Zero W connected to the RC522 reader over seven wires: SDA to GPIO8, SCK to GPIO11, MOSI to GPIO10, MISO to GPIO9, RST to GPIO25, 3.3V, and GND. IRQ is left unconnected.">
+  <rect x="0" y="0" width="760" height="320" fill="#EDEFF2"/>
+
+  <rect x="20" y="10" width="150" height="300" rx="3" fill="#E1E4E9" stroke="#1B2027"/>
+  <text x="95" y="165" font-size="13" text-anchor="middle" font-weight="600" fill="#1B2027" font-family="ui-sans-serif, system-ui, sans-serif">Pi Zero W</text>
+
+  <rect x="590" y="10" width="150" height="300" rx="3" fill="#E1E4E9" stroke="#1B2027"/>
+  <text x="665" y="165" font-size="13" text-anchor="middle" font-weight="600" fill="#1B2027" font-family="ui-sans-serif, system-ui, sans-serif">RC522</text>
+
+  <g font-size="11">
+    <line x1="170" y1="35" x2="590" y2="35" stroke="#1F7A84" stroke-width="1.75"/>
+    <text x="240" y="28" fill="#1B2027">SDA/NSS → GPIO8 (Pin 24, CE0)</text>
+
+    <line x1="170" y1="70" x2="590" y2="70" stroke="#1F7A84" stroke-width="1.75"/>
+    <text x="255" y="63" fill="#1B2027">SCK → GPIO11 (Pin 23)</text>
+
+    <line x1="170" y1="105" x2="590" y2="105" stroke="#1F7A84" stroke-width="1.75"/>
+    <text x="240" y="98" fill="#1B2027">MOSI → GPIO10 (Pin 19)</text>
+
+    <line x1="170" y1="140" x2="590" y2="140" stroke="#1F7A84" stroke-width="1.75"/>
+    <text x="240" y="133" fill="#1B2027">MISO → GPIO9 (Pin 21)</text>
+
+    <line x1="170" y1="175" x2="590" y2="175" stroke="#1F7A84" stroke-width="1.75"/>
+    <text x="245" y="168" fill="#1B2027">RST → GPIO25 (Pin 22)</text>
+
+    <line x1="170" y1="210" x2="590" y2="210" stroke="#B03F26" stroke-width="1.75"/>
+    <text x="290" y="203" fill="#B03F26">3.3V (Pin 1/17)</text>
+
+    <line x1="170" y1="245" x2="590" y2="245" stroke="#3E6A6E" stroke-width="1.75"/>
+    <text x="300" y="238" fill="#3E6A6E">GND (Pin 6)</text>
+
+    <line x1="170" y1="280" x2="590" y2="280" stroke="#8B93A0" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <text x="320" y="273" fill="#565F6B">IRQ — not connected</text>
+  </g>
+</svg>
