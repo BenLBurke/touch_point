@@ -82,6 +82,8 @@ sudo ~/touch_point/venv/bin/python touch_point.py
 | `TOUCHPOINT_AUDIO_DEVICE`  | `plughw:2,0`      | ALSA device for the USB sound card (see `aplay -l`)   |
 | `TOUCHPOINT_SOUND_DIR`     | `sound_files/`    | Directory containing the wav files                    |
 | `TOUCHPOINT_LOG_FILE`      | `touch_point.log` | Log file path                                         |
+| `TOUCHPOINT_LOG_MAX_BYTES` | `1000000`         | Log file size before it rotates (~1MB)                |
+| `TOUCHPOINT_LOG_BACKUP_COUNT` | `3`            | Rotated log files kept, on top of the active one       |
 
 Set them before launch instead of editing code, e.g.:
 ```bash

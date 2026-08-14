@@ -9,6 +9,8 @@ ENV_VARS = (
     "TOUCHPOINT_VOLUME",
     "TOUCHPOINT_AUDIO_DRIVER",
     "TOUCHPOINT_AUDIO_DEVICE",
+    "TOUCHPOINT_LOG_MAX_BYTES",
+    "TOUCHPOINT_LOG_BACKUP_COUNT",
 )
 
 
@@ -27,6 +29,8 @@ def test_defaults_when_env_unset(monkeypatch):
         assert reloaded.VOLUME == 1.0
         assert reloaded.AUDIO_DRIVER == "alsa"
         assert reloaded.AUDIO_DEVICE == "plughw:2,0"
+        assert reloaded.LOG_MAX_BYTES == 1_000_000
+        assert reloaded.LOG_BACKUP_COUNT == 3
     finally:
         importlib.reload(config)
 

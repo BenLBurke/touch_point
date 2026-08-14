@@ -35,6 +35,8 @@ AUDIO_DEVICE = os.environ.get("TOUCHPOINT_AUDIO_DEVICE", "plughw:2,0")
 
 SOUND_DIR = Path(os.environ.get("TOUCHPOINT_SOUND_DIR", str(BASE_DIR / "sound_files")))
 LOG_FILE = Path(os.environ.get("TOUCHPOINT_LOG_FILE", str(BASE_DIR / "touch_point.log")))
+LOG_MAX_BYTES = _env_int("TOUCHPOINT_LOG_MAX_BYTES", 1_000_000)  # ~1MB per file
+LOG_BACKUP_COUNT = _env_int("TOUCHPOINT_LOG_BACKUP_COUNT", 3)  # + 3 rotated copies
 
 IDLE_COLOR = (50, 50, 50)
 TAP_COLOR = (0, 0, 255)

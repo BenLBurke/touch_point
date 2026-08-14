@@ -13,6 +13,7 @@ import os
 import random
 import signal
 import time
+from logging.handlers import RotatingFileHandler
 
 # Ensure relative paths (sound_files/, the log file) work no matter
 # where the process is launched from (pm2, cron, an interactive shell...).
@@ -21,10 +22,18 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 from touchpoint import config, effects, hardware
 from touchpoint.sounds import effect_for
 
+# RotatingFileHandler, not basicConfig(filename=...), so the log can't
+# grow unbounded on a device meant to run for months unattended.
 logging.basicConfig(
-    filename=str(config.LOG_FILE),
     level=logging.INFO,
     format="%(asctime)s %(levelname)s:%(message)s",
+    handlers=[
+        RotatingFileHandler(
+            str(config.LOG_FILE),
+            maxBytes=config.LOG_MAX_BYTES,
+            backupCount=config.LOG_BACKUP_COUNT,
+        )
+    ],
 )
 logger = logging.getLogger(__name__)
 
