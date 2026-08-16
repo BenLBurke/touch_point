@@ -78,9 +78,9 @@ def main() -> None:
             name, sound = random.choice(list(sound_library.items()))
             logger.info("Chosen sound %s", name)
 
-            # Idle glow
-            pixels.fill(config.IDLE_COLOR)
-            pixels.show()
+            # Idle glow -- alternating pixels, not a full fill, to cut
+            # idle power draw roughly in half (see effects.alternating_fill).
+            effects.alternating_fill(pixels, config.IDLE_COLOR)
 
             # Block until RFID scan. A transient read error shouldn't take
             # down the whole process -- log it and keep waiting for a tag.

@@ -27,6 +27,20 @@ def clear_pixels(pixels) -> None:
     pixels.show()
 
 
+def alternating_fill(pixels, color: Color) -> None:
+    """Light every other pixel, leaving the rest off.
+
+    Static (no animation loop), so it's safe to use anywhere a plain
+    fill() was used before -- no risk to RFID read latency. Draws
+    roughly half the current of lighting the whole ring at the same
+    color, since WS2812 power scales with how many pixels are lit.
+    """
+    n = len(pixels)
+    for i in range(n):
+        pixels[i] = color if i % 2 == 0 else (0, 0, 0)
+    pixels.show()
+
+
 def wheel(pos: int) -> Color:
     """Generate rainbow colors across 0-255 positions."""
     pos = pos % 256

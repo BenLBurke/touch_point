@@ -51,6 +51,32 @@ def test_fade_to_color_ends_exactly_on_target():
     assert all(p == (100, 150, 200) for p in pixels)
 
 
+def test_alternating_fill_lights_only_even_indices():
+    pixels = FakePixels(10)
+    effects.alternating_fill(pixels, (50, 50, 50))
+    for i, p in enumerate(pixels):
+        if i % 2 == 0:
+            assert p == (50, 50, 50)
+        else:
+            assert p == (0, 0, 0)
+    assert pixels.show_calls == 1
+
+
+def test_alternating_fill_draws_roughly_half_the_current_of_a_full_fill():
+    pixels = FakePixels(48)
+    effects.alternating_fill(pixels, (50, 50, 50))
+    lit = sum(1 for p in pixels if p != (0, 0, 0))
+    assert lit == 24
+
+
+def test_alternating_fill_overwrites_previous_state():
+    pixels = FakePixels(6)
+    pixels.fill((10, 10, 10))
+    effects.alternating_fill(pixels, (255, 0, 0))
+    assert pixels[0] == (255, 0, 0)
+    assert pixels[1] == (0, 0, 0)
+
+
 def test_comet_leaves_only_tail_length_pixels_lit():
     pixels = FakePixels(20)
     effects.comet(pixels, (255, 0, 0), tail_length=4, delay=0)
