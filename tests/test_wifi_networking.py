@@ -10,8 +10,8 @@ import pytest
 from wifi_portal import networking
 
 
-def _fake_result(stdout="", returncode=0):
-    return types.SimpleNamespace(stdout=stdout, returncode=returncode)
+def _fake_result(stdout="", returncode=0, stderr=""):
+    return types.SimpleNamespace(stdout=stdout, returncode=returncode, stderr=stderr)
 
 
 def test_is_connected_true_when_wlan0_up_on_a_real_network(monkeypatch):
@@ -103,3 +103,43 @@ def test_connect_open_network_omits_password_flag(monkeypatch):
 
     connect_call = next(c for c in calls if "connect" in c)
     assert "password" not in connect_call
+
+
+def test_start_ap_returns_true_when_everything_succeeds(monkeypatch):
+    monkeypatch.setattr(networking.subprocess, "run", lambda args, **kw: _fake_result(returncode=0))
+    assert networking.start_ap() is True
+
+
+def test_start_ap_returns_false_when_profile_creation_fails(monkeypatch, caplog):
+    def fake_run(args, **kwargs):
+        if "add" in args:
+            return _fake_result(returncode=1, stdout="")
+        return _fake_result(returncode=0)
+
+    monkeypatch.setattr(networking.subprocess, "run", fake_run)
+    with caplog.at_level("ERROR"):
+        assert networking.start_ap() is False
+    assert "couldn't bring it up" not in caplog.text  # failed earlier, at profile creation
+    assert any("create the onboarding AP" in r.message for r in caplog.records)
+
+
+def test_start_ap_returns_false_when_bringing_it_up_fails(monkeypatch, caplog):
+    def fake_run(args, **kwargs):
+        if args[:3] == ["nmcli", "connection", "up"]:
+            return _fake_result(returncode=1)
+        return _fake_result(returncode=0)
+
+    monkeypatch.setattr(networking.subprocess, "run", fake_run)
+    with caplog.at_level("ERROR"):
+        assert networking.start_ap() is False
+    assert any("couldn't bring it up" in r.message for r in caplog.records)
+
+
+def test_run_logs_a_warning_when_a_command_fails(monkeypatch, caplog):
+    monkeypatch.setattr(
+        networking.subprocess, "run",
+        lambda args, **kw: _fake_result(returncode=1),
+    )
+    with caplog.at_level("WARNING"):
+        networking._run(["nmcli", "definitely", "not", "a", "real", "command"])
+    assert any("Command failed" in r.message for r in caplog.records)

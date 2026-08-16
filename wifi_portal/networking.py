@@ -9,12 +9,15 @@ Important hardware constraint: a Pi Zero W has a single WiFi radio, so
 it cannot scan for nearby networks while also running as an access
 point. Callers must scan_networks() *before* start_ap(), not after.
 """
+import logging
 import subprocess
 from dataclasses import dataclass
 
 WLAN_IFACE = "wlan0"
 AP_SSID = "Touch Point Setup"
 AP_CON_NAME = "touchpoint-ap"
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -25,7 +28,15 @@ class WifiNetwork:
 
 
 def _run(args):
-    return subprocess.run(args, capture_output=True, text=True, check=False)
+    result = subprocess.run(args, capture_output=True, text=True, check=False)
+    if result.returncode != 0:
+        logger.warning(
+            "Command failed (exit %d): %s\nstdout: %s\nstderr: %s",
+            result.returncode, " ".join(args), result.stdout.strip(), result.stderr.strip(),
+        )
+    else:
+        logger.debug("Ran: %s", " ".join(args))
+    return result
 
 
 def is_connected() -> bool:
@@ -62,10 +73,11 @@ def scan_networks() -> list:
     return sorted(seen.values(), key=lambda n: n.signal, reverse=True)
 
 
-def start_ap() -> None:
-    """Bring up an open (no password) access point for onboarding."""
-    _run(["nmcli", "connection", "delete", AP_CON_NAME])  # clear any stale profile
-    _run([
+def start_ap() -> bool:
+    """Bring up an open (no password) access point for onboarding.
+    Returns True if it actually came up."""
+    _run(["nmcli", "connection", "delete", AP_CON_NAME])  # clear any stale profile; ok if it didn't exist
+    add_result = _run([
         "nmcli", "connection", "add",
         "type", "wifi",
         "ifname", WLAN_IFACE,
@@ -77,7 +89,17 @@ def start_ap() -> None:
         "ipv4.method", "shared",
         "wifi-sec.key-mgmt", "none",
     ])
-    _run(["nmcli", "connection", "up", AP_CON_NAME])
+    if add_result.returncode != 0:
+        logger.error("Failed to create the onboarding AP connection profile -- see command output above.")
+        return False
+
+    up_result = _run(["nmcli", "connection", "up", AP_CON_NAME])
+    if up_result.returncode != 0:
+        logger.error("Created the AP profile but couldn't bring it up -- see command output above.")
+        return False
+
+    logger.info("Onboarding AP '%s' is up.", AP_SSID)
+    return True
 
 
 def stop_ap() -> None:
