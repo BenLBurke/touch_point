@@ -87,7 +87,14 @@ def start_ap() -> bool:
         "802-11-wireless.mode", "ap",
         "802-11-wireless.band", "bg",
         "ipv4.method", "shared",
-        "wifi-sec.key-mgmt", "none",
+        # Deliberately no wifi-sec.* properties: NetworkManager treats a
+        # connection with no 802-11-wireless-security section as open.
+        # Explicitly setting key-mgmt=none (even though that's the
+        # documented "no security" value) has been observed to make
+        # `nmcli connection up` prompt for a password it can never get in
+        # a non-interactive context, and fail with "Passwords or
+        # encryption keys are required" -- omitting it entirely avoids
+        # that.
     ])
     if add_result.returncode != 0:
         logger.error("Failed to create the onboarding AP connection profile -- see command output above.")
