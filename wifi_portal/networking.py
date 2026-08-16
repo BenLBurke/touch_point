@@ -27,10 +27,15 @@ class WifiNetwork:
     security: str  # e.g. "WPA2", "" for open
 
 
-def _run(args):
+def _run(args, best_effort=False):
+    """Run an nmcli command. best_effort=True is for cleanup calls that
+    are *expected* to sometimes fail (e.g. deleting a profile that might
+    not exist) -- those get logged quietly at DEBUG instead of raising a
+    WARNING that looks like a real problem."""
     result = subprocess.run(args, capture_output=True, text=True, check=False)
     if result.returncode != 0:
-        logger.warning(
+        log = logger.debug if best_effort else logger.warning
+        log(
             "Command failed (exit %d): %s\nstdout: %s\nstderr: %s",
             result.returncode, " ".join(args), result.stdout.strip(), result.stderr.strip(),
         )
@@ -76,7 +81,7 @@ def scan_networks() -> list:
 def start_ap() -> bool:
     """Bring up an open (no password) access point for onboarding.
     Returns True if it actually came up."""
-    _run(["nmcli", "connection", "delete", AP_CON_NAME])  # clear any stale profile; ok if it didn't exist
+    _run(["nmcli", "connection", "delete", AP_CON_NAME], best_effort=True)  # clear any stale profile; ok if it didn't exist
     add_result = _run([
         "nmcli", "connection", "add",
         "type", "wifi",
@@ -110,7 +115,9 @@ def start_ap() -> bool:
 
 
 def stop_ap() -> None:
-    _run(["nmcli", "connection", "down", AP_CON_NAME])
+    # best_effort: fine if it's already down (e.g. never came up, or this
+    # is being called a second time in a row).
+    _run(["nmcli", "connection", "down", AP_CON_NAME], best_effort=True)
 
 
 def connect(ssid: str, password: str) -> bool:
@@ -124,7 +131,7 @@ def connect(ssid: str, password: str) -> bool:
     # hardware to fail with "802-11-wireless-security.key-mgmt: property
     # is missing" even with a correct password supplied. Deleting first
     # guarantees a clean profile every time; harmless no-op if none exists.
-    _run(["nmcli", "connection", "delete", ssid])
+    _run(["nmcli", "connection", "delete", ssid], best_effort=True)
     args = ["nmcli", "device", "wifi", "connect", ssid, "ifname", WLAN_IFACE]
     if password:
         args += ["password", password]

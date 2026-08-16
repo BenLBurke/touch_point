@@ -159,4 +159,27 @@ def test_run_logs_a_warning_when_a_command_fails(monkeypatch, caplog):
     )
     with caplog.at_level("WARNING"):
         networking._run(["nmcli", "definitely", "not", "a", "real", "command"])
-    assert any("Command failed" in r.message for r in caplog.records)
+    assert any("Command failed" in r.message and r.levelname == "WARNING" for r in caplog.records)
+
+
+def test_run_best_effort_logs_quietly_instead_of_warning(monkeypatch, caplog):
+    monkeypatch.setattr(
+        networking.subprocess, "run",
+        lambda args, **kw: _fake_result(returncode=1),
+    )
+    with caplog.at_level("DEBUG"):
+        networking._run(["nmcli", "connection", "delete", "NeverExisted"], best_effort=True)
+    assert not any(r.levelname == "WARNING" for r in caplog.records)
+    assert any("Command failed" in r.message and r.levelname == "DEBUG" for r in caplog.records)
+
+
+def test_connect_deletes_stale_profile_quietly_even_if_it_doesnt_exist(monkeypatch, caplog):
+    def fake_run(args, **kwargs):
+        if args[:3] == ["nmcli", "connection", "delete"]:
+            return _fake_result(returncode=1, stderr="unknown connection")
+        return _fake_result(returncode=0)
+
+    monkeypatch.setattr(networking.subprocess, "run", fake_run)
+    with caplog.at_level("WARNING"):
+        assert networking.connect("BrandNewNetwork", "hunter2") is True
+    assert not any(r.levelname == "WARNING" for r in caplog.records)
