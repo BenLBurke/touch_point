@@ -117,6 +117,14 @@ def connect(ssid: str, password: str) -> bool:
     """Tear down the onboarding AP and try to join a real network.
     Returns True on success."""
     stop_ap()
+    # Delete any existing saved profile for this SSID first. A stale or
+    # partially-created profile (e.g. left over from an earlier attempt,
+    # or from before this device went through onboarding) makes nmcli try
+    # to patch it instead of building a fresh one -- observed on real
+    # hardware to fail with "802-11-wireless-security.key-mgmt: property
+    # is missing" even with a correct password supplied. Deleting first
+    # guarantees a clean profile every time; harmless no-op if none exists.
+    _run(["nmcli", "connection", "delete", ssid])
     args = ["nmcli", "device", "wifi", "connect", ssid, "ifname", WLAN_IFACE]
     if password:
         args += ["password", password]

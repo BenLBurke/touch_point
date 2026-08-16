@@ -83,6 +83,23 @@ def test_connect_success_stops_ap_first(monkeypatch):
     assert ap_down_index < connect_index
 
 
+def test_connect_deletes_any_stale_profile_before_connecting(monkeypatch):
+    calls = []
+
+    def fake_run(args, **kwargs):
+        calls.append(args)
+        return _fake_result(returncode=0)
+
+    monkeypatch.setattr(networking.subprocess, "run", fake_run)
+    networking.connect("HomeNet", "hunter2")
+
+    delete_call = next(c for c in calls if c[:3] == ["nmcli", "connection", "delete"])
+    assert delete_call[-1] == "HomeNet"
+    connect_index = next(i for i, c in enumerate(calls) if "connect" in c)
+    delete_index = calls.index(delete_call)
+    assert delete_index < connect_index
+
+
 def test_connect_failure_returns_false(monkeypatch):
     def fake_run(args, **kwargs):
         return _fake_result(returncode=1)
