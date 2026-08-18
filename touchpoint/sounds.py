@@ -95,21 +95,25 @@ SPECIAL_SOUND_LIBRARY = (
 )
 
 
+def is_special_card(card_id) -> bool:
+    from . import config
+
+    return bool(config.SPECIAL_CARD_ID) and str(card_id) == config.SPECIAL_CARD_ID
+
+
 def choose_sound(card_id, sound_library: dict, special_sound_library: dict):
     """Pick a (name, sound_entry, is_special) tuple for a scanned card.
 
     sound_library / special_sound_library are {name: {"song": ..., "length": ...}}
-    dicts, e.g. what touchpoint.hardware.load_all_sounds() returns. Falls
-    back to the normal library if the card doesn't match the configured
-    special card, or if the special collection is empty (nothing added
-    yet) even when the card does match -- so an incomplete setup degrades
-    to normal behavior instead of crashing. `is_special` tells the caller
-    whether to play the water effect instead of the usual name-based one.
+    dicts, e.g. what touchpoint.hardware.load_all_sounds() /
+    load_special_library() return. Falls back to the normal library if the
+    card doesn't match the configured special card, or if the special
+    collection is empty (nothing added yet, or not loaded yet) even when
+    the card does match -- so an incomplete setup degrades to normal
+    behavior instead of crashing. `is_special` tells the caller whether to
+    play the water effect instead of the usual name-based one.
     """
-    from . import config
-
-    is_special_card = bool(config.SPECIAL_CARD_ID) and str(card_id) == config.SPECIAL_CARD_ID
-    if is_special_card and special_sound_library:
+    if is_special_card(card_id) and special_sound_library:
         name, sound = random.choice(list(special_sound_library.items()))
         return name, sound, True
     name, sound = random.choice(list(sound_library.items()))

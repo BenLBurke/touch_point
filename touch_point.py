@@ -20,7 +20,7 @@ from logging.handlers import RotatingFileHandler
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 from touchpoint import config, effects, hardware
-from touchpoint.sounds import choose_sound, effect_for
+from touchpoint.sounds import choose_sound, effect_for, is_special_card
 
 # RotatingFileHandler, not basicConfig(filename=...), so the log can't
 # grow unbounded on a device meant to run for months unattended.
@@ -69,13 +69,13 @@ def main() -> None:
     pixels = hardware.init_pixels()
     reader = hardware.init_reader()
     pygame_module = hardware.init_audio()
-    tap_sound, sound_library, special_sound_library = hardware.load_all_sounds(pygame_module)
-
-    if config.SPECIAL_CARD_ID and not special_sound_library:
-        logger.warning(
-            "TOUCHPOINT_SPECIAL_CARD_ID is set but SPECIAL_SOUND_LIBRARY in "
-            "touchpoint/sounds.py is empty -- that card will behave like any other."
-        )
+    tap_sound, sound_library = hardware.load_all_sounds(pygame_module)
+    # The special (anniversary) collection is tens of MB -- loaded lazily,
+    # the first time that card is actually scanned, instead of on every
+    # boot, so a normal restart isn't paying to decode audio nobody asked
+    # for yet. None means "not loaded this run"; {} would mean "loaded,
+    # but empty."
+    special_sound_library = None
 
     print("Ready to scan MagicBand...")
 
@@ -97,16 +97,28 @@ def main() -> None:
             print(f"Scanned MagicBand ID: {card_id}")
             logger.info("Scanned MagicBand ID: %s", card_id)
 
-            # Which song plays depends on which card this is -- the one
-            # configured special card draws from its own collection.
-            name, sound, is_special = choose_sound(card_id, sound_library, special_sound_library)
-            logger.info("Chosen sound %s%s", name, " (special)" if is_special else "")
-
             try:
                 tap_sound.play()
 
                 effects.comet(pixels, config.TAP_COLOR)
                 time.sleep(1)
+
+                # First anniversary-card tap this run: load its (large)
+                # song collection now rather than at boot. Cached above
+                # after the first load, so this only costs a beat once.
+                if special_sound_library is None and is_special_card(card_id):
+                    logger.info("First anniversary-card tap this run -- loading special song library")
+                    special_sound_library = hardware.load_special_library(pygame_module)
+                    if not special_sound_library:
+                        logger.warning(
+                            "TOUCHPOINT_SPECIAL_CARD_ID is set but SPECIAL_SOUND_LIBRARY in "
+                            "touchpoint/sounds.py is empty -- that card will behave like any other."
+                        )
+
+                # Which song plays depends on which card this is -- the one
+                # configured special card draws from its own collection.
+                name, sound, is_special = choose_sound(card_id, sound_library, special_sound_library or {})
+                logger.info("Chosen sound %s%s", name, " (special)" if is_special else "")
 
                 sound["song"].play()
                 if is_special:
