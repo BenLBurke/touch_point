@@ -68,21 +68,11 @@ def _load_library(pygame_module, clips):
 
 
 def load_all_sounds(pygame_module):
-    """Load the tap sound and the main library.
+    """Load the tap sound, the main library, and the special-card library.
 
-    The special-card library is loaded separately, on demand (see
-    load_special_library()) rather than here -- it's tens of MB that the
-    vast majority of taps never touch, and decoding it eagerly on every
-    boot measurably slows startup on a Pi Zero.
-
-    Returns (tap_sound, {name: {"song": Sound, "length": int}}).
+    Returns (tap_sound, {name: {"song": Sound, "length": int}}, {same shape, special collection}).
     """
     tap_sound = load_sound(pygame_module, config.SOUND_DIR / sounds.TAP_SOUND_FILENAME)
     library = _load_library(pygame_module, sounds.SOUND_LIBRARY)
-    return tap_sound, library
-
-
-def load_special_library(pygame_module):
-    """Load the special-card (anniversary) collection. Called lazily, the
-    first time that card is scanned in a given run -- see touch_point.py."""
-    return _load_library(pygame_module, sounds.SPECIAL_SOUND_LIBRARY)
+    special_library = _load_library(pygame_module, sounds.SPECIAL_SOUND_LIBRARY)
+    return tap_sound, library, special_library

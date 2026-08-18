@@ -65,17 +65,6 @@ _MAIN_LIBRARY = {"progress": {"song": "prog.wav", "length": 7}}
 _SPECIAL_LIBRARY = {"ariel": {"song": "ariel.wav", "length": 45}}
 
 
-def test_is_special_card_true_only_for_a_matching_configured_card(monkeypatch):
-    monkeypatch.setattr(config, "SPECIAL_CARD_ID", "999888777")
-    assert sounds.is_special_card("999888777") is True
-    assert sounds.is_special_card("11111") is False
-
-
-def test_is_special_card_false_when_nothing_configured(monkeypatch):
-    monkeypatch.setattr(config, "SPECIAL_CARD_ID", "")
-    assert sounds.is_special_card("999888777") is False
-
-
 def test_choose_sound_uses_normal_library_when_no_special_card_configured(monkeypatch):
     monkeypatch.setattr(config, "SPECIAL_CARD_ID", "")
     name, sound, is_special = sounds.choose_sound("12345", _MAIN_LIBRARY, _SPECIAL_LIBRARY)

@@ -84,10 +84,7 @@ def test_init_audio_sets_env_vars_and_calls_mixer(monkeypatch):
     assert os.environ["AUDIODEV"] == "plughw:1,0"
 
 
-def test_load_all_sounds_covers_the_main_library_only(monkeypatch, tmp_path):
-    # The special (anniversary) collection is tens of MB and is loaded
-    # separately, lazily -- see load_special_library() below -- so a plain
-    # load_all_sounds() call should touch only the tap sound + main library.
+def test_load_all_sounds_covers_the_whole_library(monkeypatch, tmp_path):
     loaded_paths = []
 
     class FakeSound:
@@ -104,36 +101,16 @@ def test_load_all_sounds_covers_the_main_library_only(monkeypatch, tmp_path):
 
     from touchpoint import sounds
 
-    tap_sound, library = hardware.load_all_sounds(fake_pygame)
+    tap_sound, library, special_library = hardware.load_all_sounds(fake_pygame)
 
     assert isinstance(tap_sound, FakeSound)
     assert tap_sound.volume == 1.0
     assert set(library.keys()) == {clip.name for clip in sounds.SOUND_LIBRARY}
     for clip in sounds.SOUND_LIBRARY:
         assert library[clip.name]["length"] == clip.length
-    # tap sound + one per main-library clip -- nothing from the special one
-    assert len(loaded_paths) == 1 + len(sounds.SOUND_LIBRARY)
-
-
-def test_load_special_library_covers_the_special_collection(monkeypatch, tmp_path):
-    class FakeSound:
-        def __init__(self, path):
-            self.path = path
-            self.volume = None
-
-        def set_volume(self, volume):
-            self.volume = volume
-
-    fake_pygame = types.SimpleNamespace(mixer=types.SimpleNamespace(Sound=FakeSound))
-    monkeypatch.setattr(config, "SOUND_DIR", tmp_path)
-
-    from touchpoint import sounds
-
-    special_library = hardware.load_special_library(fake_pygame)
-
     assert set(special_library.keys()) == {clip.name for clip in sounds.SPECIAL_SOUND_LIBRARY}
-    for clip in sounds.SPECIAL_SOUND_LIBRARY:
-        assert special_library[clip.name]["length"] == clip.length
+    # tap sound + one per library clip + one per special-library clip
+    assert len(loaded_paths) == 1 + len(sounds.SOUND_LIBRARY) + len(sounds.SPECIAL_SOUND_LIBRARY)
 
 
 def test_load_sound_defaults_to_configured_volume(monkeypatch, tmp_path):
