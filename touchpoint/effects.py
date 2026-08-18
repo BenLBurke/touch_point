@@ -117,7 +117,7 @@ def water_ripple(
     low_color: Color = (6, 40, 66),
     high_color: Color = (120, 210, 220),
     duration: float = 20.0,
-    speed: float = 0.6,
+    speed: float = 1.6,
     fps: float = 30.0,
     fade_in: float = 2.5,
     fade_out: float = 2.5,
@@ -129,10 +129,14 @@ def water_ripple(
     collection's songs run anywhere from ~10s to ~60s) at a consistent
     animation speed, rather than stretching/compressing a fixed step count.
 
-    Two overlaid sine waves of different frequency and phase, rather than
-    one, so the ring doesn't just pulse in unison -- it reads as a mild,
-    organic ripple. `low_color` never actually goes fully dark by default,
-    keeping the whole thing soft rather than flashing to black.
+    Two overlaid sine waves at different spatial frequencies (2 and 3 full
+    cycles around the ring) and speeds, moving in opposite directions, so
+    distinct bands of brightness visibly travel around the ring and
+    interfere with each other -- a single low-frequency wave (one cycle
+    per lap) reads as the whole ring gently breathing in and out together,
+    which on real hardware was too subtle to look like motion at all.
+    `low_color` never actually goes fully dark by default, keeping the
+    whole thing soft rather than flashing to black.
 
     `fade_in`/`fade_out` scale the ripple's amplitude from (and back down
     to) a flat `low_color` across the first/last few seconds, so it breathes
@@ -158,7 +162,7 @@ def water_ripple(
         envelope = max(0.0, min(1.0, envelope))
         for i in range(n):
             angle = (i / n) * 2 * math.pi
-            wave = math.sin(angle + t * speed) * 0.7 + math.sin(angle * 2 - t * speed * 1.3) * 0.3
+            wave = math.sin(angle * 2 + t * speed) * 0.65 + math.sin(angle * 3 - t * speed * 0.8) * 0.35
             level = max(0.0, min(1.0, (wave + 1) / 2)) * envelope
             pixels[i] = tuple(
                 int(low_color[c] + (high_color[c] - low_color[c]) * level)
