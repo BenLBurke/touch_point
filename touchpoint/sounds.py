@@ -88,6 +88,10 @@ SPECIAL_SOUND_LIBRARY = (
     SoundClip("william1", "william1_music.wav", 30),
     SoundClip("william2", "william2_music.wav", 25),
     SoundClip("william3", "william3_music.wav", 29),
+    SoundClip("ben", "ben_music.wav", 67),
+    SoundClip("kyrstin", "kyrstin_music.wav", 45),
+    SoundClip("chalene", "chalene_music.wav", 45),
+    SoundClip("matthew", "matthew_music.wav", 20),
 )
 
 
