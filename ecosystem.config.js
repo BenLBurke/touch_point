@@ -17,6 +17,7 @@ module.exports = {
       cwd: __dirname,
       env: {
         TOUCHPOINT_AUDIO_DEVICE: "plughw:0,0",
+        TOUCHPOINT_SPECIAL_CARD_ID: "354868069890",
         // TOUCHPOINT_NUM_PIXELS: "46",  // uncomment and set if your ring isn't the default 48
         // TOUCHPOINT_VOLUME: "0.7",     // uncomment to set default playback volume, 0.0-1.0 (default 1.0)
       },
