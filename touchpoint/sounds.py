@@ -84,7 +84,11 @@ def find_clip(name: str):
 #
 #   SoundClip("ariel", "part_of_your_world.wav", 45),
 #
-SPECIAL_SOUND_LIBRARY = ()
+SPECIAL_SOUND_LIBRARY = (
+    SoundClip("william1", "william1_music.wav", 30),
+    SoundClip("william2", "william2_music.wav", 25),
+    SoundClip("william3", "william3_music.wav", 29),
+)
 
 
 def choose_sound(card_id, sound_library: dict, special_sound_library: dict):
