@@ -111,11 +111,15 @@ def main() -> None:
                 sound["song"].play()
                 if is_special:
                     effects.water_ripple(pixels, duration=sound["length"])
+                    time.sleep(1)
+                    # Cross-fade from the ripple's own dim ending color
+                    # instead of fade_to_color's snap-to-black start, so
+                    # the whole special-card sequence stays soft to the end.
+                    effects.fade_pixels_to(pixels, config.IDLE_COLOR, duration=2)
                 else:
                     run_effect(pixels, effect_for(name, sound["length"]))
-
-                time.sleep(1)
-                effects.fade_to_color(pixels, config.IDLE_COLOR, duration=2)
+                    time.sleep(1)
+                    effects.fade_to_color(pixels, config.IDLE_COLOR, duration=2)
             except (KeyboardInterrupt, Shutdown):
                 raise
             except Exception:

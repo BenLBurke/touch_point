@@ -19,6 +19,20 @@ class FakePixels(list):
         self.show_calls += 1
 
 
+class RecordingPixels(FakePixels):
+    """FakePixels that also keeps a snapshot of every frame shown, so a
+    test can inspect the *first* frame drawn instead of only the state
+    left behind once the whole effect call returns."""
+
+    def __init__(self, n):
+        super().__init__(n)
+        self.snapshots = []
+
+    def show(self):
+        super().show()
+        self.snapshots.append(list(self))
+
+
 @pytest.fixture(autouse=True)
 def no_sleep(monkeypatch):
     """Effects call time.sleep() between animation frames; skip the
@@ -153,6 +167,74 @@ def test_water_ripple_is_smooth_between_neighboring_pixels(monkeypatch):
         a = pixels[i]
         b = pixels[(i + 1) % len(pixels)]
         assert all(abs(a[c] - b[c]) < 60 for c in range(3))
+
+
+def test_water_ripple_fades_in_from_low_color(monkeypatch):
+    # Right after the tap chime the ripple shouldn't snap straight to full
+    # swing -- the very first frame drawn should sit close to low_color.
+    pixels = RecordingPixels(12)
+    monkeypatch.setattr(effects.time, "time", _fake_clock(step=0.01))
+    low = (6, 40, 66)
+
+    effects.water_ripple(pixels, low_color=low, duration=2.0, fps=20, fade_in=1.0, fade_out=0.0)
+
+    first_frame = pixels.snapshots[0]
+    for pixel in first_frame:
+        for channel in range(3):
+            assert abs(pixel[channel] - low[channel]) < 40
+
+
+def test_water_ripple_fades_out_before_ending(monkeypatch):
+    # The last frame before duration elapses should have settled back
+    # near low_color rather than cutting off mid-swell.
+    pixels = FakePixels(12)
+    monkeypatch.setattr(effects.time, "time", _fake_clock(step=0.01))
+    low = (6, 40, 66)
+
+    effects.water_ripple(pixels, low_color=low, duration=2.0, fps=20, fade_in=0.0, fade_out=1.0)
+
+    for pixel in pixels:
+        for channel in range(3):
+            assert abs(pixel[channel] - low[channel]) < 40
+
+
+def test_water_ripple_clamps_fade_windows_on_short_clips(monkeypatch):
+    # A fade_in + fade_out longer than the clip itself shouldn't crash or
+    # leave the ring stuck; it should just run and finish normally.
+    pixels = FakePixels(12)
+    monkeypatch.setattr(effects.time, "time", _fake_clock(step=0.01))
+
+    effects.water_ripple(pixels, duration=0.3, fps=20, fade_in=5.0, fade_out=5.0)
+
+    assert pixels.show_calls >= 1
+
+
+def test_fade_pixels_to_does_not_snap_through_black():
+    pixels = FakePixels(6)
+    pixels.fill((100, 40, 20))
+
+    effects.fade_pixels_to(pixels, (10, 10, 200), duration=0, steps=4)
+
+    # Even the very first written frame should already be blended, never
+    # a hard drop to (0, 0, 0) the way fade_to_color's first step would be.
+    assert all(p != (0, 0, 0) for p in pixels)
+
+
+def test_fade_pixels_to_lands_exactly_on_target():
+    pixels = FakePixels(6)
+    pixels.fill((100, 40, 20))
+
+    effects.fade_pixels_to(pixels, (10, 10, 200), duration=0, steps=5)
+
+    assert all(p == (10, 10, 200) for p in pixels)
+
+
+def test_fade_pixels_to_handles_pixels_that_already_started_dark():
+    pixels = FakePixels(4)  # starts all (0, 0, 0)
+
+    effects.fade_pixels_to(pixels, (50, 50, 50), duration=0, steps=3)
+
+    assert all(p == (50, 50, 50) for p in pixels)
 
 
 def test_fade_burst_turns_pixel_back_off():

@@ -119,6 +119,8 @@ def water_ripple(
     duration: float = 20.0,
     speed: float = 0.6,
     fps: float = 30.0,
+    fade_in: float = 2.5,
+    fade_out: float = 2.5,
 ) -> None:
     """Smooth, continuously flowing ripple, like light reflecting off water.
 
@@ -131,22 +133,63 @@ def water_ripple(
     one, so the ring doesn't just pulse in unison -- it reads as a mild,
     organic ripple. `low_color` never actually goes fully dark by default,
     keeping the whole thing soft rather than flashing to black.
+
+    `fade_in`/`fade_out` scale the ripple's amplitude from (and back down
+    to) a flat `low_color` across the first/last few seconds, so it breathes
+    in gently after the tap chime instead of snapping straight to full
+    motion, and settles rather than cutting off mid-swell when the song
+    ends. Clamped so they can't overlap on a very short clip.
     """
     n = len(pixels)
     frame_delay = 1.0 / fps
+    fade_in = max(0.0, min(fade_in, duration / 2))
+    fade_out = max(0.0, min(fade_out, duration / 2))
     start = time.time()
-    while time.time() - start < duration:
+    while True:
         t = time.time() - start
+        if t >= duration:
+            break
+        envelope = 1.0
+        if fade_in and t < fade_in:
+            envelope = t / fade_in
+        remaining = duration - t
+        if fade_out and remaining < fade_out:
+            envelope = min(envelope, remaining / fade_out)
+        envelope = max(0.0, min(1.0, envelope))
         for i in range(n):
             angle = (i / n) * 2 * math.pi
             wave = math.sin(angle + t * speed) * 0.7 + math.sin(angle * 2 - t * speed * 1.3) * 0.3
-            level = max(0.0, min(1.0, (wave + 1) / 2))
+            level = max(0.0, min(1.0, (wave + 1) / 2)) * envelope
             pixels[i] = tuple(
                 int(low_color[c] + (high_color[c] - low_color[c]) * level)
                 for c in range(3)
             )
         pixels.show()
         time.sleep(frame_delay)
+
+
+def fade_pixels_to(pixels, target_color: Color, duration: float = 2.0, steps: int = 30) -> None:
+    """Cross-fade every pixel from wherever it currently sits to a single
+    target color.
+
+    Unlike fade_to_color (which always ramps up from black, regardless of
+    what was already showing), this reads each pixel's current value first,
+    so handing off from an animation that's already mid-color -- like
+    water_ripple's final frame -- doesn't flash to black first.
+    """
+    n = len(pixels)
+    start_colors = [tuple(pixels[i]) for i in range(n)]
+    for step in range(steps):
+        level = step / steps
+        for i in range(n):
+            pixels[i] = tuple(
+                int(start_colors[i][c] + (target_color[c] - start_colors[i][c]) * level)
+                for c in range(3)
+            )
+        pixels.show()
+        time.sleep(duration / steps)
+    pixels.fill(target_color)
+    pixels.show()
 
 
 def fireworks(pixels, num_bursts: int = 10, delay_between: float = 0.2) -> None:
