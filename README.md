@@ -84,11 +84,21 @@ sudo ~/touch_point/venv/bin/python touch_point.py
 | `TOUCHPOINT_LOG_FILE`      | `touch_point.log` | Log file path                                         |
 | `TOUCHPOINT_LOG_MAX_BYTES` | `1000000`         | Log file size before it rotates (~1MB)                |
 | `TOUCHPOINT_LOG_BACKUP_COUNT` | `3`            | Rotated log files kept, on top of the active one       |
+| `TOUCHPOINT_SPECIAL_CARD_ID`  | *(unset)*      | One card's UID that plays the special collection below |
 
 Set them before launch instead of editing code, e.g.:
 ```bash
 TOUCHPOINT_AUDIO_DEVICE=plughw:1,0 sudo -E ~/touch_point/venv/bin/python touch_point.py
 ```
+
+# One special card, its own songs and light show
+One specific card/band can be set up to play from a separate collection with its own soft, flowing "water" light show (`touchpoint.effects.water_ripple`) instead of the usual per-song color mapping. Every other card is unaffected.
+
+1. **Find the card's UID**: `sudo venv/bin/python hardware_checks/rfid_test.py`, tap the card, note the ID it prints.
+2. **Set it**: `TOUCHPOINT_SPECIAL_CARD_ID=<that id>` (in `ecosystem.config.js` if running under PM2, same as the other env vars).
+3. **Add the songs** in `touchpoint/sounds.py`, in `SPECIAL_SOUND_LIBRARY` (same shape as `SOUND_LIBRARY` above it), and drop the matching wav files in `sound_files/`. Any length works — `water_ripple` paces itself off the wav's actual duration rather than a fixed step count, so a 10-second clip and a 60-second one both animate at the same speed.
+
+If the card ID is set but `SPECIAL_SOUND_LIBRARY` is still empty, that card just behaves like any other one (logged as a warning on startup) rather than erroring.
 
 # Tests
 ```bash

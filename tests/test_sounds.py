@@ -1,4 +1,4 @@
-from touchpoint import sounds
+from touchpoint import config, sounds
 
 
 def test_default_effect_for_unknown_sound():
@@ -59,3 +59,37 @@ def test_every_clip_has_an_effect_plan():
     for clip in sounds.SOUND_LIBRARY:
         plan = sounds.effect_for(clip.name, clip.length)
         assert plan["type"] in valid_types
+
+
+_MAIN_LIBRARY = {"progress": {"song": "prog.wav", "length": 7}}
+_SPECIAL_LIBRARY = {"ariel": {"song": "ariel.wav", "length": 45}}
+
+
+def test_choose_sound_uses_normal_library_when_no_special_card_configured(monkeypatch):
+    monkeypatch.setattr(config, "SPECIAL_CARD_ID", "")
+    name, sound, is_special = sounds.choose_sound("12345", _MAIN_LIBRARY, _SPECIAL_LIBRARY)
+    assert name == "progress"
+    assert is_special is False
+
+
+def test_choose_sound_uses_special_library_when_card_matches(monkeypatch):
+    monkeypatch.setattr(config, "SPECIAL_CARD_ID", "999888777")
+    name, sound, is_special = sounds.choose_sound("999888777", _MAIN_LIBRARY, _SPECIAL_LIBRARY)
+    assert name == "ariel"
+    assert is_special is True
+
+
+def test_choose_sound_uses_normal_library_when_card_does_not_match(monkeypatch):
+    monkeypatch.setattr(config, "SPECIAL_CARD_ID", "999888777")
+    name, sound, is_special = sounds.choose_sound("11111", _MAIN_LIBRARY, _SPECIAL_LIBRARY)
+    assert name == "progress"
+    assert is_special is False
+
+
+def test_choose_sound_falls_back_when_special_library_is_empty(monkeypatch):
+    # Card matches, but nothing's been added to the special collection yet
+    # -- should degrade to normal behavior instead of crashing.
+    monkeypatch.setattr(config, "SPECIAL_CARD_ID", "999888777")
+    name, sound, is_special = sounds.choose_sound("999888777", _MAIN_LIBRARY, {})
+    assert name == "progress"
+    assert is_special is False

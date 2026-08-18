@@ -40,3 +40,10 @@ LOG_BACKUP_COUNT = _env_int("TOUCHPOINT_LOG_BACKUP_COUNT", 3)  # + 3 rotated cop
 
 IDLE_COLOR = (50, 50, 50)
 TAP_COLOR = (0, 0, 255)
+
+# The UID of one specific physical card/band that plays from a separate
+# "special" song collection (see touchpoint/sounds.py) instead of the
+# main library. Find a card's UID with hardware_checks/rfid_test.py.
+# Blank (the default) disables the feature entirely -- every card behaves
+# like a normal one.
+SPECIAL_CARD_ID = os.environ.get("TOUCHPOINT_SPECIAL_CARD_ID", "").strip()

@@ -4,6 +4,7 @@ This module is pure data and logic: it knows which wav file and which
 animation go with each tag scan, but never touches real audio or LED
 hardware, so it can be unit tested on any machine.
 """
+import random
 from dataclasses import dataclass
 
 PURPLE = (157, 0, 255)
@@ -74,3 +75,34 @@ def find_clip(name: str):
         if clip.name == name:
             return clip
     return None
+
+
+# Songs played only for one specific card (see TOUCHPOINT_SPECIAL_CARD_ID
+# in touchpoint/config.py), each getting the "water" light show
+# (touchpoint.effects.water_ripple) instead of the normal name-based
+# mapping above. Add your own entries here, same shape as SOUND_LIBRARY:
+#
+#   SoundClip("ariel", "part_of_your_world.wav", 45),
+#
+SPECIAL_SOUND_LIBRARY = ()
+
+
+def choose_sound(card_id, sound_library: dict, special_sound_library: dict):
+    """Pick a (name, sound_entry, is_special) tuple for a scanned card.
+
+    sound_library / special_sound_library are {name: {"song": ..., "length": ...}}
+    dicts, e.g. what touchpoint.hardware.load_all_sounds() returns. Falls
+    back to the normal library if the card doesn't match the configured
+    special card, or if the special collection is empty (nothing added
+    yet) even when the card does match -- so an incomplete setup degrades
+    to normal behavior instead of crashing. `is_special` tells the caller
+    whether to play the water effect instead of the usual name-based one.
+    """
+    from . import config
+
+    is_special_card = bool(config.SPECIAL_CARD_ID) and str(card_id) == config.SPECIAL_CARD_ID
+    if is_special_card and special_sound_library:
+        name, sound = random.choice(list(special_sound_library.items()))
+        return name, sound, True
+    name, sound = random.choice(list(sound_library.items()))
+    return name, sound, False

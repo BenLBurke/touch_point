@@ -57,17 +57,22 @@ def load_sound(pygame_module, path, volume: float = None):
     return sound
 
 
-def load_all_sounds(pygame_module):
-    """Load the tap sound plus every clip in the sound library.
-
-    Returns (tap_sound, {name: {"song": Sound, "length": int}}).
-    """
-    tap_sound = load_sound(pygame_module, config.SOUND_DIR / sounds.TAP_SOUND_FILENAME)
-    library = {
+def _load_library(pygame_module, clips):
+    return {
         clip.name: {
             "song": load_sound(pygame_module, config.SOUND_DIR / clip.filename),
             "length": clip.length,
         }
-        for clip in sounds.SOUND_LIBRARY
+        for clip in clips
     }
-    return tap_sound, library
+
+
+def load_all_sounds(pygame_module):
+    """Load the tap sound, the main library, and the special-card library.
+
+    Returns (tap_sound, {name: {"song": Sound, "length": int}}, {same shape, special collection}).
+    """
+    tap_sound = load_sound(pygame_module, config.SOUND_DIR / sounds.TAP_SOUND_FILENAME)
+    library = _load_library(pygame_module, sounds.SOUND_LIBRARY)
+    special_library = _load_library(pygame_module, sounds.SPECIAL_SOUND_LIBRARY)
+    return tap_sound, library, special_library

@@ -93,6 +93,68 @@ def test_comet_handles_ring_smaller_than_tail(monkeypatch):
     assert len(pixels) == 3
 
 
+def _fake_clock(step=0.05):
+    """A time.time() replacement that advances by `step` on every call,
+    regardless of sleep (the no_sleep fixture neutralizes real sleeping,
+    so water_ripple's own timing has to come from time.time() alone)."""
+    state = {"n": 0}
+
+    def fake_time():
+        state["n"] += 1
+        return state["n"] * step
+
+    return fake_time
+
+
+def test_water_ripple_runs_and_calls_show(monkeypatch):
+    pixels = FakePixels(12)
+    monkeypatch.setattr(effects.time, "time", _fake_clock())
+
+    effects.water_ripple(pixels, duration=0.3, fps=20)
+
+    assert pixels.show_calls >= 1
+
+
+def test_water_ripple_colors_stay_within_low_and_high_bounds(monkeypatch):
+    pixels = FakePixels(12)
+    monkeypatch.setattr(effects.time, "time", _fake_clock())
+    low = (6, 40, 66)
+    high = (120, 210, 220)
+
+    effects.water_ripple(pixels, low_color=low, high_color=high, duration=0.3, fps=20)
+
+    for pixel in pixels:
+        for channel in range(3):
+            lo, hi = sorted((low[channel], high[channel]))
+            assert lo <= pixel[channel] <= hi
+
+
+def test_water_ripple_default_never_goes_fully_dark(monkeypatch):
+    # Encodes the "soft" requirement: the low end of the ripple is a dim
+    # blue, not black, so it never looks like the ring switched off.
+    pixels = FakePixels(12)
+    monkeypatch.setattr(effects.time, "time", _fake_clock())
+
+    effects.water_ripple(pixels, duration=0.3, fps=20)
+
+    assert all(pixel != (0, 0, 0) for pixel in pixels)
+
+
+def test_water_ripple_is_smooth_between_neighboring_pixels(monkeypatch):
+    # "Smooth and soft" means no hard edges between adjacent pixels --
+    # unlike e.g. comet()'s sharp tail cutoff, neighboring pixels here
+    # should always be close in brightness.
+    pixels = FakePixels(24)
+    monkeypatch.setattr(effects.time, "time", _fake_clock())
+
+    effects.water_ripple(pixels, duration=0.3, fps=20)
+
+    for i in range(len(pixels)):
+        a = pixels[i]
+        b = pixels[(i + 1) % len(pixels)]
+        assert all(abs(a[c] - b[c]) < 60 for c in range(3))
+
+
 def test_fade_burst_turns_pixel_back_off():
     pixels = FakePixels(8)
     effects.fade_burst(pixels, 2, (255, 0, 0), duration=0, steps=5)

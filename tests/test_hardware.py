@@ -101,15 +101,16 @@ def test_load_all_sounds_covers_the_whole_library(monkeypatch, tmp_path):
 
     from touchpoint import sounds
 
-    tap_sound, library = hardware.load_all_sounds(fake_pygame)
+    tap_sound, library, special_library = hardware.load_all_sounds(fake_pygame)
 
     assert isinstance(tap_sound, FakeSound)
     assert tap_sound.volume == 1.0
     assert set(library.keys()) == {clip.name for clip in sounds.SOUND_LIBRARY}
     for clip in sounds.SOUND_LIBRARY:
         assert library[clip.name]["length"] == clip.length
-    # tap sound + one per library clip
-    assert len(loaded_paths) == 1 + len(sounds.SOUND_LIBRARY)
+    assert set(special_library.keys()) == {clip.name for clip in sounds.SPECIAL_SOUND_LIBRARY}
+    # tap sound + one per library clip + one per special-library clip
+    assert len(loaded_paths) == 1 + len(sounds.SOUND_LIBRARY) + len(sounds.SPECIAL_SOUND_LIBRARY)
 
 
 def test_load_sound_defaults_to_configured_volume(monkeypatch, tmp_path):

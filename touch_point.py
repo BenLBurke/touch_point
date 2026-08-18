@@ -20,7 +20,7 @@ from logging.handlers import RotatingFileHandler
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 from touchpoint import config, effects, hardware
-from touchpoint.sounds import effect_for
+from touchpoint.sounds import choose_sound, effect_for
 
 # RotatingFileHandler, not basicConfig(filename=...), so the log can't
 # grow unbounded on a device meant to run for months unattended.
@@ -69,15 +69,18 @@ def main() -> None:
     pixels = hardware.init_pixels()
     reader = hardware.init_reader()
     pygame_module = hardware.init_audio()
-    tap_sound, sound_library = hardware.load_all_sounds(pygame_module)
+    tap_sound, sound_library, special_sound_library = hardware.load_all_sounds(pygame_module)
+
+    if config.SPECIAL_CARD_ID and not special_sound_library:
+        logger.warning(
+            "TOUCHPOINT_SPECIAL_CARD_ID is set but SPECIAL_SOUND_LIBRARY in "
+            "touchpoint/sounds.py is empty -- that card will behave like any other."
+        )
 
     print("Ready to scan MagicBand...")
 
     try:
         while True:
-            name, sound = random.choice(list(sound_library.items()))
-            logger.info("Chosen sound %s", name)
-
             # Idle glow -- alternating pixels, not a full fill, to cut
             # idle power draw roughly in half (see effects.alternating_fill).
             effects.alternating_fill(pixels, config.IDLE_COLOR)
@@ -94,6 +97,11 @@ def main() -> None:
             print(f"Scanned MagicBand ID: {card_id}")
             logger.info("Scanned MagicBand ID: %s", card_id)
 
+            # Which song plays depends on which card this is -- the one
+            # configured special card draws from its own collection.
+            name, sound, is_special = choose_sound(card_id, sound_library, special_sound_library)
+            logger.info("Chosen sound %s%s", name, " (special)" if is_special else "")
+
             try:
                 tap_sound.play()
 
@@ -101,7 +109,10 @@ def main() -> None:
                 time.sleep(1)
 
                 sound["song"].play()
-                run_effect(pixels, effect_for(name, sound["length"]))
+                if is_special:
+                    effects.water_ripple(pixels, duration=sound["length"])
+                else:
+                    run_effect(pixels, effect_for(name, sound["length"]))
 
                 time.sleep(1)
                 effects.fade_to_color(pixels, config.IDLE_COLOR, duration=2)
