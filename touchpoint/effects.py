@@ -5,6 +5,7 @@ Every function takes a `pixels`-like object -- anything that supports
 ``neopixel.NeoPixel``, or a plain list-based fake in tests) -- so the
 animation logic can be exercised without any LED hardware attached.
 """
+import math
 import random
 import time
 
@@ -106,3 +107,54 @@ def fireworks(pixels, num_bursts: int = 10, delay_between: float = 0.2) -> None:
         pixels.show()
         fade_burst(pixels, pixel, color)
         time.sleep(delay_between)
+
+
+def _scale(color: Color, level: float) -> Color:
+    return tuple(int(c * level) for c in color)
+
+
+def _blend(color_a: Color, color_b: Color, t: float) -> Color:
+    return tuple(int(a + (b - a) * t) for a, b in zip(color_a, color_b))
+
+
+def hop(pixels, color: Color, duration: float, size: int = 6, beat: float = 0.25) -> None:
+    """A block of light that hops around the ring to a funky beat: it lands
+    bright, settles dim, then jumps one or two block-widths forward."""
+    n = len(pixels)
+    pos = 0
+    for _ in range(max(1, int(duration / beat))):
+        for level, hold in ((1.0, 0.6), (0.25, 0.4)):
+            pixels.fill((0, 0, 0))
+            for k in range(size):
+                pixels[(pos + k) % n] = _scale(color, level)
+            pixels.show()
+            time.sleep(beat * hold)
+        pos = (pos + size * random.choice((1, 2))) % n
+
+
+def parade(pixels, colors, duration: float, stripe: int = 4, delay: float = 0.08) -> None:
+    """Alternating color stripes marching around the ring, reversing
+    direction halfway through for a twisting, parade-float feel."""
+    n = len(pixels)
+    frames = max(1, int(duration / delay))
+    offset = 0
+    for f in range(frames):
+        for i in range(n):
+            pixels[i] = colors[((i + offset) // stripe) % len(colors)]
+        pixels.show()
+        offset += 1 if f < frames // 2 else -1
+        time.sleep(delay)
+
+
+def swirl(pixels, color_a: Color, color_b: Color, duration: float, delay: float = 0.05) -> None:
+    """Two colors melting into each other in a slow wave that circles the
+    ring, with a gentle breathing brightness -- a bit of shadowy magic."""
+    n = len(pixels)
+    frames = max(1, int(duration / delay))
+    for f in range(frames):
+        breath = 0.6 + 0.4 * (math.sin(2 * math.pi * f / 40) + 1) / 2
+        for i in range(n):
+            t = (math.sin(2 * math.pi * (i / n + f / 30)) + 1) / 2
+            pixels[i] = _scale(_blend(color_a, color_b, t), breath)
+        pixels.show()
+        time.sleep(delay)

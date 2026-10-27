@@ -35,6 +35,16 @@ def test_happily_is_fireworks():
     assert sounds.effect_for("happily", length=7) == {"type": "fireworks"}
 
 
+def test_halloween_clips_get_their_own_effects():
+    assert sounds.effect_for("oogie", length=9) == {"type": "hop", "color": sounds.GREEN, "duration": 9}
+    assert sounds.effect_for("boo", length=7) == {
+        "type": "parade", "colors": [sounds.PURPLE, sounds.ORANGE], "duration": 7,
+    }
+    assert sounds.effect_for("facilier", length=9) == {
+        "type": "swirl", "colors": [sounds.PURPLE, sounds.PINK], "duration": 9,
+    }
+
+
 def test_find_clip_looks_up_by_name():
     clip = sounds.find_clip("pirates")
     assert clip is not None
@@ -55,7 +65,7 @@ def test_every_clip_has_an_effect_plan():
     # Every real sound in the library should resolve to a valid, known
     # effect type -- catches typos if a new sound is added without
     # wiring up (or deliberately falling back to the default for) it.
-    valid_types = {"fade", "double_fade", "fireworks", "chaos"}
+    valid_types = {"fade", "double_fade", "fireworks", "chaos", "hop", "parade", "swirl"}
     for clip in sounds.SOUND_LIBRARY:
         plan = sounds.effect_for(clip.name, clip.length)
         assert plan["type"] in valid_types
