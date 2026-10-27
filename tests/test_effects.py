@@ -86,3 +86,25 @@ def test_burst_restores_original_pixel_state():
     pixels = FakePixels(10)
     effects.burst(pixels)
     assert all(p == (0, 0, 0) for p in pixels)
+
+
+def test_hop_lights_one_block_of_the_hop_color():
+    pixels = FakePixels(48)
+    effects.hop(pixels, (0, 255, 0), duration=2, size=6)
+    lit = [p for p in pixels if p != (0, 0, 0)]
+    assert len(lit) == 6
+    assert all(p[0] == 0 and p[2] == 0 for p in lit)
+
+
+def test_parade_fills_ring_with_only_the_parade_colors():
+    pixels = FakePixels(48)
+    colors = [(157, 0, 255), (255, 90, 0)]
+    effects.parade(pixels, colors, duration=1)
+    assert set(pixels) == set(colors)
+
+
+def test_swirl_stays_between_its_two_colors():
+    pixels = FakePixels(48)
+    effects.swirl(pixels, (157, 0, 255), (255, 20, 147), duration=1)
+    assert all(p != (0, 0, 0) for p in pixels)
+    assert all(p[1] <= 20 for p in pixels)

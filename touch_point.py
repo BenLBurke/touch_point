@@ -52,6 +52,12 @@ def run_effect(pixels, plan: dict) -> None:
             effects.comet(pixels, random.choice(effects.FIREWORK_COLORS), tail_length=8, delay=0.03)
             effects.burst(pixels)
             effects.rainbow_cycle(pixels, duration=1)
+    elif plan["type"] == "hop":
+        effects.hop(pixels, plan["color"], duration=plan["duration"])
+    elif plan["type"] == "parade":
+        effects.parade(pixels, plan["colors"], duration=plan["duration"])
+    elif plan["type"] == "swirl":
+        effects.swirl(pixels, *plan["colors"], duration=plan["duration"])
     else:
         raise ValueError(f"Unknown effect type: {plan['type']!r}")
 

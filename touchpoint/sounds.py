@@ -10,6 +10,8 @@ PURPLE = (157, 0, 255)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
 GREEN = (0, 255, 0)
+ORANGE = (255, 90, 0)
+PINK = (255, 20, 147)
 
 TAP_SOUND_FILENAME = "mb_accept.wav"
 
@@ -33,6 +35,9 @@ SOUND_LIBRARY = (
     SoundClip("stop_us", "stop_us_now.wav", 7),
     SoundClip("tiki", "tiki_room_cut2.wav", 13),
     SoundClip("saddle", "blood-on-the-saddle_cut.wav", 14),
+    SoundClip("oogie", "oogie_boogie.wav", 9),
+    SoundClip("boo", "boo_to_you.wav", 7),
+    SoundClip("facilier", "transformation_central.wav", 9),
 )
 
 # Sounds that just fade the ring to a fixed color for the sound's length.
@@ -57,6 +62,9 @@ def effect_for(name: str, length: int) -> dict:
       {"type": "double_fade", "colors": [(r, g, b), (r, g, b)], "duration": seconds}
       {"type": "fireworks"}
       {"type": "chaos", "duration": seconds}
+      {"type": "hop", "color": (r, g, b), "duration": seconds}
+      {"type": "parade", "colors": [(r, g, b), ...], "duration": seconds}
+      {"type": "swirl", "colors": [(r, g, b), (r, g, b)], "duration": seconds}
     """
     if name in _FADE_COLORS:
         return {"type": "fade", "color": _FADE_COLORS[name], "duration": length}
@@ -66,6 +74,12 @@ def effect_for(name: str, length: int) -> dict:
         return {"type": "double_fade", "colors": [RED, YELLOW], "duration": 2}
     if name == "stop_us":
         return {"type": "chaos", "duration": 9}
+    if name == "oogie":
+        return {"type": "hop", "color": GREEN, "duration": length}
+    if name == "boo":
+        return {"type": "parade", "colors": [PURPLE, ORANGE], "duration": length}
+    if name == "facilier":
+        return {"type": "swirl", "colors": [PURPLE, PINK], "duration": length}
     return {"type": "fade", "color": DEFAULT_EFFECT_COLOR, "duration": length}
 
 
