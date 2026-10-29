@@ -10,7 +10,7 @@ no Blinka/SPI/audio hardware attached: tests simply put fake modules in
 import logging
 import os
 
-from . import config, sounds
+from . import config
 
 logger = logging.getLogger(__name__)
 
@@ -36,12 +36,22 @@ def init_reader():
 
 
 def init_audio():
+    """Open (or reopen) the speaker.
+
+    Called on every tap rather than once at startup: a USB speaker can
+    drop off the bus and come back (a brief power dip is enough), and a
+    mixer opened before that keeps writing to the old, dead device. Any
+    Sound objects loaded before a reopen are invalid afterwards, so load
+    sounds fresh after calling this.
+    """
     # Must be set before pygame/SDL touches the audio subsystem.
     os.environ["SDL_AUDIODRIVER"] = config.AUDIO_DRIVER
     os.environ["AUDIODEV"] = config.AUDIO_DEVICE
 
     import pygame
 
+    if pygame.mixer.get_init():
+        pygame.mixer.quit()
     pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
     pygame.mixer.init()
     logger.info("Audio ready: driver=%s device=%s", config.AUDIO_DRIVER, config.AUDIO_DEVICE)
@@ -53,19 +63,3 @@ def load_sound(pygame_module, path, volume: float = 1.0):
     sound = pygame_module.mixer.Sound(str(path))
     sound.set_volume(volume)
     return sound
-
-
-def load_all_sounds(pygame_module):
-    """Load the tap sound plus every clip in the sound library.
-
-    Returns (tap_sound, {name: {"song": Sound, "length": int}}).
-    """
-    tap_sound = load_sound(pygame_module, config.SOUND_DIR / sounds.TAP_SOUND_FILENAME)
-    library = {
-        clip.name: {
-            "song": load_sound(pygame_module, config.SOUND_DIR / clip.filename),
-            "length": clip.length,
-        }
-        for clip in sounds.SOUND_LIBRARY
-    }
-    return tap_sound, library

@@ -19,7 +19,7 @@ import time
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 from touchpoint import config, effects, hardware
-from touchpoint.sounds import effect_for
+from touchpoint.sounds import SOUND_LIBRARY, TAP_SOUND_FILENAME, effect_for
 
 logging.basicConfig(
     filename=str(config.LOG_FILE),
@@ -62,18 +62,46 @@ def run_effect(pixels, plan: dict) -> None:
         raise ValueError(f"Unknown effect type: {plan['type']!r}")
 
 
+def open_speaker():
+    """Reopen the speaker, or return None (lights only) if it's missing."""
+    try:
+        return hardware.init_audio()
+    except Exception:
+        logger.exception("Speaker unavailable; playing lights only")
+        return None
+
+
+def play_sound(pygame_module, filename):
+    """Load and start a clip. Returns the Sound (keep a reference while it
+    plays), or None if there's no speaker or the clip fails to load."""
+    if pygame_module is None:
+        return None
+    try:
+        sound = hardware.load_sound(pygame_module, config.SOUND_DIR / filename)
+        sound.play()
+        return sound
+    except Exception:
+        logger.exception("Could not play %s", filename)
+        return None
+
+
 def main() -> None:
     pixels = hardware.init_pixels()
     reader = hardware.init_reader()
-    pygame_module = hardware.init_audio()
-    tap_sound, sound_library = hardware.load_all_sounds(pygame_module)
+    # Opened once here only so the log shows the speaker status at boot;
+    # it's reopened on every tap below.
+    pygame_module = open_speaker()
+
+    for clip in SOUND_LIBRARY:
+        if not (config.SOUND_DIR / clip.filename).exists():
+            logger.warning("Missing sound file: %s", clip.filename)
 
     print("Ready to scan MagicBand...")
 
     try:
         while True:
-            name, sound = random.choice(list(sound_library.items()))
-            logger.info("Chosen sound %s", name)
+            clip = random.choice(SOUND_LIBRARY)
+            logger.info("Chosen sound %s", clip.name)
 
             # Idle glow
             pixels.fill(config.IDLE_COLOR)
@@ -92,27 +120,32 @@ def main() -> None:
             logger.info("Scanned MagicBand ID: %s", card_id)
 
             try:
-                tap_sound.play()
+                # Free the last tap's sounds while their mixer is still
+                # open, then reopen the speaker in case it reconnected.
+                tap_sound = song = None
+                pygame_module = open_speaker()
+                tap_sound = play_sound(pygame_module, TAP_SOUND_FILENAME)
 
                 effects.comet(pixels, config.TAP_COLOR)
                 time.sleep(1)
 
-                sound["song"].play()
-                run_effect(pixels, effect_for(name, sound["length"]))
+                song = play_sound(pygame_module, clip.filename)
+                run_effect(pixels, effect_for(clip.name, clip.length))
 
                 time.sleep(1)
                 effects.fade_to_color(pixels, config.IDLE_COLOR, duration=2)
             except (KeyboardInterrupt, Shutdown):
                 raise
             except Exception:
-                logger.exception("Effect playback failed for %s", name)
+                logger.exception("Effect playback failed for %s", clip.name)
     finally:
         try:
             effects.clear_pixels(pixels)
         except Exception:
             logger.exception("Failed to clear pixels during shutdown")
         try:
-            pygame_module.mixer.quit()
+            if pygame_module is not None:
+                pygame_module.mixer.quit()
         except Exception:
             logger.exception("Failed to quit audio mixer during shutdown")
 
