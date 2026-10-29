@@ -56,19 +56,29 @@ def test_init_reader_returns_simple_mfrc522(monkeypatch):
     assert hardware.init_reader() is sentinel
 
 
+class FakeMixer:
+    def __init__(self, already_open=False):
+        self.calls = []
+        self.open = already_open
+
+    def get_init(self):
+        return self.open
+
+    def quit(self):
+        self.calls.append("quit")
+        self.open = False
+
+    def pre_init(self, **kwargs):
+        self.calls.append(("pre_init", kwargs))
+
+    def init(self):
+        self.calls.append("init")
+        self.open = True
+
+
 def test_init_audio_sets_env_vars_and_calls_mixer(monkeypatch):
-    calls = {}
-
-    class FakeMixer:
-        @staticmethod
-        def pre_init(**kwargs):
-            calls["pre_init"] = kwargs
-
-        @staticmethod
-        def init():
-            calls["init"] = True
-
-    fake_pygame = types.SimpleNamespace(mixer=FakeMixer)
+    mixer = FakeMixer()
+    fake_pygame = types.SimpleNamespace(mixer=mixer)
     monkeypatch.setitem(sys.modules, "pygame", fake_pygame)
     monkeypatch.setattr(config, "AUDIO_DRIVER", "alsa")
     monkeypatch.setattr(config, "AUDIO_DEVICE", "plughw:1,0")
@@ -76,37 +86,39 @@ def test_init_audio_sets_env_vars_and_calls_mixer(monkeypatch):
     result = hardware.init_audio()
 
     assert result is fake_pygame
-    assert calls["init"] is True
-    assert calls["pre_init"]["frequency"] == 44100
+    assert "quit" not in mixer.calls
+    assert mixer.calls[-1] == "init"
+    assert mixer.calls[0][1]["frequency"] == 44100
     import os
 
     assert os.environ["SDL_AUDIODRIVER"] == "alsa"
     assert os.environ["AUDIODEV"] == "plughw:1,0"
 
 
-def test_load_all_sounds_covers_the_whole_library(monkeypatch, tmp_path):
-    loaded_paths = []
+def test_init_audio_closes_an_already_open_mixer_first(monkeypatch):
+    # Reopening is how a speaker that dropped off USB and came back gets
+    # picked up again, so the stale mixer must be closed before init.
+    mixer = FakeMixer(already_open=True)
+    monkeypatch.setitem(sys.modules, "pygame", types.SimpleNamespace(mixer=mixer))
 
+    hardware.init_audio()
+
+    assert mixer.calls[0] == "quit"
+    assert mixer.calls[-1] == "init"
+
+
+def test_load_sound_sets_volume(tmp_path):
     class FakeSound:
         def __init__(self, path):
             self.path = path
             self.volume = None
-            loaded_paths.append(path)
 
         def set_volume(self, volume):
             self.volume = volume
 
     fake_pygame = types.SimpleNamespace(mixer=types.SimpleNamespace(Sound=FakeSound))
-    monkeypatch.setattr(config, "SOUND_DIR", tmp_path)
 
-    from touchpoint import sounds
+    sound = hardware.load_sound(fake_pygame, tmp_path / "x.wav", volume=0.5)
 
-    tap_sound, library = hardware.load_all_sounds(fake_pygame)
-
-    assert isinstance(tap_sound, FakeSound)
-    assert tap_sound.volume == 1.0
-    assert set(library.keys()) == {clip.name for clip in sounds.SOUND_LIBRARY}
-    for clip in sounds.SOUND_LIBRARY:
-        assert library[clip.name]["length"] == clip.length
-    # tap sound + one per library clip
-    assert len(loaded_paths) == 1 + len(sounds.SOUND_LIBRARY)
+    assert sound.path == str(tmp_path / "x.wav")
+    assert sound.volume == 0.5
