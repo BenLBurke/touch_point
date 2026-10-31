@@ -89,6 +89,7 @@ def test_init_audio_sets_env_vars_and_calls_mixer(monkeypatch):
     assert "quit" not in mixer.calls
     assert mixer.calls[-1] == "init"
     assert mixer.calls[0][1]["frequency"] == 44100
+    assert mixer.calls[0][1]["buffer"] == config.AUDIO_BUFFER
     import os
 
     assert os.environ["SDL_AUDIODRIVER"] == "alsa"

@@ -31,6 +31,10 @@ BRIGHTNESS = _env_float("TOUCHPOINT_BRIGHTNESS", 0.4)
 
 AUDIO_DRIVER = os.environ.get("TOUCHPOINT_AUDIO_DRIVER", "alsa")
 AUDIO_DEVICE = os.environ.get("TOUCHPOINT_AUDIO_DEVICE", "plughw:2,0")
+# Samples per audio chunk. Small chunks underrun (crackle/drop out) on a
+# single-core Pi Zero while the LED animations hog the CPU; 4096 is ~0.1s
+# of slack at 44.1kHz, an unnoticeable delay for a tap sound.
+AUDIO_BUFFER = _env_int("TOUCHPOINT_AUDIO_BUFFER", 4096)
 
 SOUND_DIR = Path(os.environ.get("TOUCHPOINT_SOUND_DIR", str(BASE_DIR / "sound_files")))
 LOG_FILE = Path(os.environ.get("TOUCHPOINT_LOG_FILE", str(BASE_DIR / "touch_point.log")))

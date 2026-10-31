@@ -8,6 +8,7 @@ ENV_VARS = (
     "TOUCHPOINT_BRIGHTNESS",
     "TOUCHPOINT_AUDIO_DRIVER",
     "TOUCHPOINT_AUDIO_DEVICE",
+    "TOUCHPOINT_AUDIO_BUFFER",
 )
 
 
@@ -25,6 +26,7 @@ def test_defaults_when_env_unset(monkeypatch):
         assert reloaded.BRIGHTNESS == 0.4
         assert reloaded.AUDIO_DRIVER == "alsa"
         assert reloaded.AUDIO_DEVICE == "plughw:2,0"
+        assert reloaded.AUDIO_BUFFER == 4096
     finally:
         importlib.reload(config)
 

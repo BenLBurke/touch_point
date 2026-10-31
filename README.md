@@ -59,6 +59,7 @@ sudo ~/touch_point/venv/bin/python touch_point.py
 | `TOUCHPOINT_BRIGHTNESS`    | `0.4`             | NeoPixel brightness, 0–1                              |
 | `TOUCHPOINT_AUDIO_DRIVER`  | `alsa`            | SDL audio driver                                      |
 | `TOUCHPOINT_AUDIO_DEVICE`  | `plughw:2,0`      | ALSA device for the USB sound card (see `aplay -l`)   |
+| `TOUCHPOINT_AUDIO_BUFFER`  | `4096`            | Audio chunk size in samples; raise it if logs show `underrun occurred` |
 | `TOUCHPOINT_SOUND_DIR`     | `sound_files/`    | Directory containing the wav files                    |
 | `TOUCHPOINT_LOG_FILE`      | `touch_point.log` | Log file path                                         |
 

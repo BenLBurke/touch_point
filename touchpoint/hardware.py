@@ -52,7 +52,7 @@ def init_audio():
 
     if pygame.mixer.get_init():
         pygame.mixer.quit()
-    pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
+    pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=config.AUDIO_BUFFER)
     pygame.mixer.init()
     logger.info("Audio ready: driver=%s device=%s", config.AUDIO_DRIVER, config.AUDIO_DEVICE)
     return pygame

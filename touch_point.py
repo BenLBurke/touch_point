@@ -110,7 +110,10 @@ def main() -> None:
             # Block until RFID scan. A transient read error shouldn't take
             # down the whole process -- log it and keep waiting for a tag.
             try:
-                card_id, _text = reader.read()
+                # read_id() only reads the tag's UID. read() also tries to
+                # unlock the tag's data with the default key, which fails
+                # ("AUTH ERROR!!") on MagicBands and isn't needed here.
+                card_id = reader.read_id()
             except Exception:
                 logger.exception("RFID read failed, retrying")
                 time.sleep(1)
