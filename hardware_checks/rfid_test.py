@@ -7,8 +7,8 @@ while True:
   print("Place your tag near the reader...")
 
   try:
-      id, text = reader.read()
-      print("ID: %s\nText: %s" % (id, text))
+      id = reader.read_id()
+      print("ID: %s" % id)
   finally:
       print("Cleaning up GPIO")
       GPIO.cleanup()
